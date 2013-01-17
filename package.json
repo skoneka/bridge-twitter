@@ -1,0 +1,18 @@
+{
+  "name": "twitter-gateway",
+  "description": "Gateway between Twitter's API and Pryv's API",
+  "version": "0.0.1",
+  "author": "Xavier Righetti <xavier@thefabric.com>",
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "ntwitter": "0.5.x",
+    "winston": "0.6.x",
+    "async": "0.1.x",
+    "ejs": "*"
+  },
+  "devDependencies": {
+    "mocha": "1.7.x",
+    "should": "*"
+  }
+}

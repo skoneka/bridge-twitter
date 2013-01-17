@@ -1,0 +1,50 @@
+[
+	{
+		"name": "Xavier Righetti",
+		"twitter": {
+			"screen_name": "xa4loz",
+			"config": {
+				"filterIsActive": false,
+				"filter": "+Y"
+			},
+			"credentials" : {
+				"consumer_key": "K03u8c1F76VYi5X9GF0oLQ",
+				"consumer_secret": "x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0",
+				"access_token_key": "14094276-EIeiYC4xbSWbZGrGLVhwXUY5uWOboYM44gNCAkCQY",
+				"access_token_secret": "21zQC91jAi7ujLuMhtBH1hxcUe09TOBUUuw1lh1Pf8"	
+			}
+		}
+	},
+	{
+		"name": "TheFabric",
+		"twitter": {
+			"screen_name": "thefabricdotcom",
+			"config": {
+				"filterIsActive": false,
+				"filter": "+Y"
+			},
+			"credentials" : {
+				"consumer_key": "Yr0X02KMPREUtYqFGgV9OQ",
+				"consumer_secret": "T04FRATTvOo20pzhqIypwmi0jaaiZr1O4Cp9fDY",
+				"access_token_key": "14094304-ZSBIytpkkFat9u7MFwNX4ZOKaQtP5D0JZSk8xQqDG",
+				"access_token_secret": "z4doseIqS8Qf1JZm4lgij7iXny6WYi0O43qM1H4l0U"	
+			}
+		}
+	},
+	{
+		"name": "Jean-Claude Dusse",
+		"twitter": {
+			"screen_name": "jcdusse4",
+			"config": {
+				"filterIsActive": false,
+				"filter": "+Y"
+			},
+			"credentials" : {
+				"consumer_key": "djp4TYYzoM7UwN07NRRA",
+				"consumer_secret": "cagiRTrFjUxD4sMJkBYS01O9iDYMTXvXfXjYxG3bGM",
+				"access_token_key": "1079604163-2SqFWF4zh9GYLHxgIG4ZlaZ1TQ83VIeTK0nHjUB",
+				"access_token_secret": "qY3cbwUd5Zz5tY66YyXvvJvUkIkCT1EETYObu7jSNfY"
+			}
+		}
+	}
+]
