@@ -74,11 +74,13 @@ Here's an example of the event's value property:
 	  "in_reply_to_screen_name": null
 	}
 
-
 ## Tests
 
-For the moment, mocha has to be installed globally. In the project folder type:
+To run the tests, simply execute the makefile:
 
-	$mocha
+	$./makefile
 
-A makefile will be provided very soon
+
+## Comments
+
+The ntwitter library has been slightly modified so it has been left in the node_modules folder.
