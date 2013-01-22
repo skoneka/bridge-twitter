@@ -1,5 +1,5 @@
 var should = require('should')
-var pryv = require('../lib/pryv-api');
+var pryv = require('../source/lib/pryv-api');
 
 
 describe('pryvApi', function() {
@@ -32,14 +32,14 @@ describe('pryvApi', function() {
   });
 
 
-  
+
 /*
   it('should be able to retrieve specific users\' tweets', function(done) {
 
     tg.searchUserTweets('xa4loz', '+Y', function(err, data) {
       should.exist(data);
       data.results.should.not.be.empty;
-      done()  
+      done()
 	  });
   });
   */

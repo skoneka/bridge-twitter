@@ -1,5 +1,5 @@
 var should = require('should')
-var tg = require('../lib/twitter-gateway');
+var tg = require('../source/lib/twitter-gateway');
 
 
 describe('twitterGateway', function() {
