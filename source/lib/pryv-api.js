@@ -1,8 +1,10 @@
 var https = require('https');
+var request = require('superagent');
 
 exports.forwardTweet = function(user, data, done) {
   if (data.created_at !== undefined) {
-    var tweet = JSON.stringify({
+    //var tweet = JSON.stringify({
+    var tweet = {
       time: toTimestamp(data.created_at),
       folderId: user.folderId,
       type: {
@@ -14,62 +16,63 @@ exports.forwardTweet = function(user, data, done) {
         text: data.text,
         screen_name: data.user.screen_name
       }
-    });
-    console.dir(tweet);
-    // the post options
-    var options = {
-      host : user.credentials.login + '.rec.la',
-      path : '/' + user.channel_id + '/events',
-      port : 443,
-      method : 'POST',
-      headers : {
-                  'Authorization': user.credentials.auth,
-                  'Content-Type' : 'application/json',
-                  'Content-Length' : Buffer.byteLength(tweet, 'utf8')
-      }
     };
 
-    var reqPost = https.request(options, function(res) {
-      res.on('data', function(d) {
-        done(JSON.parse(d));
+    request
+      .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events')
+      .set('Authorization', user.credentials.auth)
+      .send(tweet)
+      .on('error', function(err) {console.log(err);})
+      .end(function(res){
+        if (res.ok) {
+          done(res.body);
+        } else {
+          console.log('error: ' + res.text);
+        }
       });
-    });
-
-    // write the json data
-    reqPost.write(tweet);
-    reqPost.end();
-    reqPost.on('error', function(e) {
-      console.error(e);
-    });
   }
 };
 
 exports.forwardTweetsHistory = function(user, data, done) {
-  
-  var options = {
-    host : user.credentials.username + '.rec.la',
-    path : '/' + user.channelId + '/events/batch',
-    port : 443,
-    method : 'POST',
-    headers : {
-                'Authorization': user.credentials.auth,
-                'Content-Type' : 'application/json',
-                'Content-Length' : Buffer.byteLength(data, 'utf8')
-    }
-  };
 
-  var reqPost = https.request(options, function(res) {
-    res.on('data', function(d) {
-      done(undefined, JSON.parse(d));
+  request
+    .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events/batch')
+    .set('Authorization', user.credentials.auth)
+    .send(data)
+    .on('error', function(err) {console.log(err);})
+    .end(function(res){
+      if (res.ok) {
+        done(undefined, res.body);
+      } else {
+        console.log('error: ' + res.text);
+      }
     });
-  });
 
-  // write the json data
-  reqPost.write(data);
-  reqPost.end();
-  reqPost.on('error', function(e) {
-    console.error(e);
-  });
+  
+  // var options = {
+  //   host : user.credentials.username + '.rec.la',
+  //   path : '/' + user.channelId + '/events/batch',
+  //   port : 443,
+  //   method : 'POST',
+  //   headers : {
+  //               'Authorization': user.credentials.auth,
+  //               'Content-Type' : 'application/json',
+  //               'Content-Length' : Buffer.byteLength(data, 'utf8')
+  //   }
+  // };
+
+  // var reqPost = https.request(options, function(res) {
+  //   res.on('data', function(d) {
+  //     done(undefined, JSON.parse(d));
+  //   });
+  // });
+
+  // // write the json data
+  // reqPost.write(data);
+  // reqPost.end();
+  // reqPost.on('error', function(e) {
+  //   console.error(e);
+  // });
 };
 
 function toTimestamp(strDate){

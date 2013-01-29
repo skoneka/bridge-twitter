@@ -16,7 +16,7 @@
 		},
 		"pryv": {
 			"channelId": "TTStZHzmG5",
-			"folderID": "VemIzWxCB5",
+			"folderId": "VemIzWxCB5",
 			"credentials": {
 				"username": "jonmaim",
 				"auth": "VVEQmJD5T5"
@@ -40,7 +40,7 @@
 		},
 		"pryv": {
 			"channelId": "PVwkDEbXXM",
-			"folderID": "TTaEnE7GGM",
+			"folderId": "TTaEnE7GGM",
 			"credentials": {
 				"username": "perkikiki",
 				"auth": "Ve69mGqqX5"
