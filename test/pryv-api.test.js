@@ -21,9 +21,9 @@ describe('pryvApi', function() {
       }
     }]);
 
-    var user = { channel_id: 'PVwkDEbXXM',
-         folder_id: 'TTaEnE7GGM',
-         credentials: { login: 'perkikiki', auth: 'Ve69mGqqX5' } };
+    var user = { channelId: 'PVwkDEbXXM',
+         folderId: 'TTaEnE7GGM',
+         credentials: { username: 'perkikiki', auth: 'Ve69mGqqX5' } };
 
     pryv.forwardTweetsHistory(user, testData, function(err, data) {
       data.should.be.a('object').and.have.property('0');

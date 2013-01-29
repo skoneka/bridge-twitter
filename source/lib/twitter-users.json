@@ -15,10 +15,10 @@
 			}
 		},
 		"pryv": {
-			"channel_id": "TTStZHzmG5",
-			"folder_id": "VemIzWxCB5",
+			"channelId": "TTStZHzmG5",
+			"folderID": "VemIzWxCB5",
 			"credentials": {
-				"login": "jonmaim",
+				"username": "jonmaim",
 				"auth": "VVEQmJD5T5"
 			}
 		}
@@ -39,10 +39,10 @@
 			}
 		},
 		"pryv": {
-			"channel_id": "PVwkDEbXXM",
-			"folder_id": "TTaEnE7GGM",
+			"channelId": "PVwkDEbXXM",
+			"folderID": "TTaEnE7GGM",
 			"credentials": {
-				"login": "perkikiki",
+				"username": "perkikiki",
 				"auth": "Ve69mGqqX5"
 			}
 		}

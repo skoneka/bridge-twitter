@@ -4,7 +4,7 @@ exports.forwardTweet = function(user, data, done) {
   if (data.created_at !== undefined) {
     var tweet = JSON.stringify({
       "time": toTimestamp(data.created_at),
-      "folderId": user.folder_id,
+      "folderId": user.folderId,
       "type": {
         "class": "note",
         "format": "twitter"
@@ -50,8 +50,8 @@ exports.forwardTweet = function(user, data, done) {
 exports.forwardTweetsHistory = function(user, data, done) {
   
   var options = {
-    host : user.credentials.login + '.rec.la',
-    path : '/' + user.channel_id + '/events/batch',
+    host : user.credentials.username + '.rec.la',
+    path : '/' + user.channelId + '/events/batch',
     port : 443,
     method : 'POST',
     headers : {
