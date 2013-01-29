@@ -3,16 +3,16 @@ var https = require('https');
 exports.forwardTweet = function(user, data, done) {
   if (data.created_at !== undefined) {
     var tweet = JSON.stringify({
-      "time": toTimestamp(data.created_at),
-      "folderId": user.folderId,
-      "type": {
-        "class": "note",
-        "format": "twitter"
+      time: toTimestamp(data.created_at),
+      folderId: user.folderId,
+      type: {
+        class: 'note',
+        format: 'twitter'
       },
-      "value": {
-        "id": data.id_str,   // string ID to handle JS parsing problems
-        "text": data.text,
-        "screen_name": data.user.screen_name
+      value: {
+        id: data.id_str,   // string ID to handle JS parsing problems
+        text: data.text,
+        screen_name: data.user.screen_name
       }
     });
     console.dir(tweet);
@@ -30,9 +30,6 @@ exports.forwardTweet = function(user, data, done) {
     };
 
     var reqPost = https.request(options, function(res) {
-      //console.log("statusCode: ", res.statusCode);
-      //console.log("headers: ", res.headers);
-
       res.on('data', function(d) {
         done(JSON.parse(d));
       });

@@ -8,16 +8,16 @@ describe('pryvApi', function() {
   it('should be able to send a batch of status updates to pryv', function(done) {
 
     var testData = JSON.stringify([{
-      "time":1358181370,
-      "tempRefId":"0",
-      "type":{
-        "class":"note",
-        "format":"twitter"
+      time:1358181370,
+      tempRefId:'0',
+      type:{
+        class:'note',
+        format:'twitter'
       },
-      "value":{
-        "id":"290859864039751680",
-        "text":"this is a 'status' update..",
-        "screen_name":"JCDusse4"
+      value:{
+        id:'290859864039751680',
+        text:'this is a status update..',
+        screen_name:'JCDusse4'
       }
     }]);
 
