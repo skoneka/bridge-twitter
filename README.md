@@ -78,7 +78,7 @@ Here's an example of the event's value property:
 
 To run the tests, simply execute the makefile:
 
-	$./makefile
+	$make
 
 
 ## Comments
