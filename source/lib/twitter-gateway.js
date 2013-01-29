@@ -20,7 +20,7 @@ exports.streamUserTweets = function() {
     twit.stream('user', currentUser.pryv, {track:currentUser.twitter.screen_name}, function(stream, pryvUserData) {
       stream.on('data', function (data) {
         pryv.forwardTweet(pryvUserData, data, function(response) {
-          console.log("Tweet successfully stored on Pryv with id " + response.id);
+          console.log('Tweet successfully stored on Pryv with id ' + response.id);
         });
       });
       stream.on('end', function (response) {
@@ -30,7 +30,7 @@ exports.streamUserTweets = function() {
         // Handle a 'silent' disconnection from Twitter, no end/error event fired
       });
       stream.on('error', function(error, code) {
-        console.log("Error: " + error + ": " + code);
+        console.log('Error: ' + error + ': ' + code);
       });
     });
   }
@@ -103,17 +103,17 @@ function formatUserTimeline(user, data, next, done) {
   for (var i=0; i<len; i++) {
     var currentTweet = data[i];
     var tweet = {
-      "time": pryv.toTimestamp(currentTweet.created_at),
-      "tempRefId": i.toString(),
-      "folderId": user.folder_id,
-      "type": {
-        "class": "note",
-        "format": "twitter"
+      time: pryv.toTimestamp(currentTweet.created_at),
+      tempRefId: i.toString(),
+      folderId: user.folder_id,
+      type: {
+        class: 'note',
+        format: 'twitter'
       },
-      "value": {
-        "id": currentTweet.id_str,   // string ID to handle JS parsing problems
-        "text": currentTweet.text,
-        "screen_name": currentTweet.user.screen_name
+      value: {
+        id: currentTweet.id_str,   // string ID to handle JS parsing problems
+        text: currentTweet.text,
+        screen_name: currentTweet.user.screen_name
       }
     };
     tweetsHistory.push(tweet);
