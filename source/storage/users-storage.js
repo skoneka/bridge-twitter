@@ -78,7 +78,7 @@ exports.readUser = function(conditions, done) {
 
 
 exports.updateUser = function(conditions, update, done) {
-	User.update(conditions, { "$set": update }, function(err, numAffected){
+	User.update(conditions, { $set: update }, function(err, numAffected){
 		if (err) return done({'error':err});
 		if (!numAffected) return done({'error':'nothing changed'});
 		done({'ok':'updated','numAffected':numAffected});
