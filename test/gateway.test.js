@@ -204,19 +204,3 @@ describe('PUT /user-settings/user', function(){
     });
   });
 });
-
-  // it('provide info about user', function(done) {
-
-  // });
-
-  // it('update user info', function(done) {
-
-  // });
-
-  // it('provide schema of a user description', function(done) {
-
-  // });
-
-  // it('get the user\'s timeline and forward it to pryv', function(done) {
-
-  // });
