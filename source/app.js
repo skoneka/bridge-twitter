@@ -1,16 +1,13 @@
-
 /**
- * Module dependencies.
+ * The Express app definition. For usage from `server`.
  */
 
-var express = require('express')
-  , routes = require('./routes')
-  , api = require('./routes/api')
-  , http = require('http')
-  , tg = require('./lib/twitter-gateway')
-  , path = require('path');
+var express = require('express'),
+    twitter = require('./lib/twitter'),
+    usersStorage = require('./storage/users-storage');
 
-var app = express();
+
+var app = module.exports = express();
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
@@ -20,18 +17,22 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(app.router);
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.static(__dirname + '/public'));
 });
 
 app.configure('development', function(){
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function() {
   app.use(express.errorHandler());
 });
 
-app.get('/', routes.index);
-app.get('/user-timeline/:username', api.userTimeline);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+usersStorage.listUsers(function(users){
+  twitter.streamUserTweets(users);
 });
 
-tg.streamUserTweets();
+
+require('./routes/index')(app);
+require('./routes/api')(app);
