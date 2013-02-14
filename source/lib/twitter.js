@@ -66,7 +66,8 @@ function getUserTimeline(username, next, done) {
 
       function onTimeline(err, chunk) {
         if (err) {
-          console.log('Twitter search failed!');
+          console.log('Twitter search failed: ');
+          console.log(err);
           return done(err);
         }
 
@@ -75,18 +76,17 @@ function getUserTimeline(username, next, done) {
           return done(err);
         }
 
-        // Get rid of the first element of each iteration (except the first)
+        // Get rid of the first element of each iteration (except for the first iteration)
         if (data.length) chunk.shift();
-        console.log(chunk);
 
         data = data.concat(chunk);
         var thisId = parseInt(data[data.length - 1].id_str, 10);
-        if (chunk.length) return search(thisId);
+        if (chunk.length && data.length >= 200) return search(thisId);
 
         // Results must be filtered ?
         if (user && user.twitter.filterIsActive) {
           data = filterTweetsFromHistory(data, user.twitter.filter);
-        } 
+        }
         next(user, data, pryv.forwardTweetsHistory, done);
       }
     }
