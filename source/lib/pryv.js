@@ -34,9 +34,6 @@ exports.forwardTweet = function(user, data, done) {
 };
 
 exports.forwardTweetsHistory = function(user, data, done) {
-  /*
-   * Equivalent request using superagent
-   */
   request
     .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events/batch')
     .set('Authorization', user.credentials.auth)
@@ -49,35 +46,6 @@ exports.forwardTweetsHistory = function(user, data, done) {
         console.log('error: ' + res.text);
       }
     });
-
-  /*
-   * Equivalent request but without using superagent
-   */
-  // var options = {
-  //   host : user.credentials.username + '.rec.la',
-  //   path : '/' + user.channelId + '/events/batch',
-  //   port : 443,
-  //   method : 'POST',
-  //   headers : {
-  //               'Authorization': user.credentials.auth,
-  //               'Content-Type' : 'application/json',
-  //               'Content-Length' : Buffer.byteLength(data, 'utf8')
-  //   }
-  // };
-
-  // var reqPost = https.request(options, function(res) {
-  //   res.on('data', function(d) {
-  //     done(undefined, JSON.parse(d));
-  //   });
-  // });
-
-  // // write the json data
-  // reqPost.write(data);
-  // reqPost.end();
-  // reqPost.on('error', function(e) {
-  //   console.error(e);
-  // });
-
 };
 
 function toTimestamp(strDate){
