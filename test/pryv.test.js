@@ -9,7 +9,7 @@ var should = require('should'),
       "folderId": "TPZZHj5YuM",
       "credentials": {
         "username": "jonmaim",
-        "auth": "VVEQmJD5T5"
+        "auth": "auth-string"
       }
     },
     data = {
