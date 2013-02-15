@@ -76,6 +76,8 @@ Here's an example of the event's value property:
 Retrieves the last 3200 tweets of the user and forwards them to his pryv account.
 The server will respond with a list of ids resulting of the batch upload operation.
 
+***
+
     GET /user-settings-schema
 
 Provides the schema of the user settings. Currently it looks like this:
@@ -144,9 +146,13 @@ Provides the schema of the user settings. Currently it looks like this:
 	  }
 	}
 
+***
+
     GET /user-settings/user
 
 Provides settings of the user
+
+***
 
     PUT /user-settings/user
 
@@ -156,6 +162,8 @@ For example, to update the filter of the user, this json must be provided:
     {
       'twitter.filter': '+Z'
     }
+
+***
 
     POST /user-settings
 
@@ -184,6 +192,8 @@ For example, to insert a new user, this json must be provided:
       }
     }
 
+***
+
     GET /auth-process-details
 
 Provides information about the OAuth procedure.
@@ -193,6 +203,8 @@ For now is displays:
       "url": "https://api.twitter.com/oauth/authorize",
       "info": "pryv's token must be provided"
     }
+
+***
 
 For development purposes, this API call:
 
