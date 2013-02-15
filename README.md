@@ -12,14 +12,9 @@ To get the external dependencies, run:
 
 ## Usage
 
-When running, the server application automatically tracks users described in the `/lib/twitter-users.json` file.
+When running, the server application automatically tracks users stored in a mongo db (a script to populate the db is comming).
 Their tweets and the tweets of the people they follow are forwarded in real-time to their pryv account.
-
-To forward the entire timeline of a user to pryv, connect to the server like this:
-
-	http://localhost:3000/user-timeline/jcdusse4
-
-The server will respond with a list of ids resulting of the batch upload operation.
+The server relies on the boolean value twitter.isFilterActive to decide if only specific tweets must be forwarded, based on a filter defined as a string in `twitter.filter`.
 
 All tweets are stored as event with this specific type
 
@@ -73,6 +68,138 @@ Here's an example of the event's value property:
 	  },
 	  "in_reply_to_screen_name": null
 	}
+
+## API description
+
+    GET /user-timeline/user
+
+Retrieves the last 3200 tweets of the user and forwards them to his pryv account.
+The server will respond with a list of ids resulting of the batch upload operation.
+
+    GET /user-settings-schema
+
+Provides the schema of the user settings. Currently it looks like this:
+
+    {
+	  "title": "User Settings Schema",
+	  "type": "object",
+	  "properties": {
+	    "twitter": {
+	      "type": "object",
+	      "properties": {
+	        "filter": {
+	          "type": "string"
+	        },
+	        "filterIsActive": {
+	          "type": "boolean"
+	        },
+	        "credentials": {
+	          "type": "object",
+	          "properties": {
+	            "access_token_key": {
+	              "type": "string"
+	            },
+	            "access_token_secret": {
+	              "type": "string"
+	            },
+	            "consumer_key": {
+	              "type": "string"
+	            },
+	            "consumer_secret": {
+	              "type": "string"
+	            },
+	            "username": {
+	              "type": "string"
+	            }
+	          }
+	        }
+	      }
+	    },
+	    "pryv": {
+	      "type": "object",
+	      "properties": {
+	        "channelId": {
+	          "type": "string"
+	        },
+	        "folderId": {
+	          "type": "string"
+	        },
+	        "credentials": {
+	          "type": "object",
+	          "properties": {
+	            "username": {
+	              "type": "string"
+	            },
+	            "auth": {
+	              "type": "string"
+	            }
+	          }
+	        }
+	      }
+	    },
+	    "required": [
+	      "twitter",
+	      "pryv"
+	    ]
+	  }
+	}
+
+    GET /user-settings/user
+
+Provides settings of the user
+
+    PUT /user-settings/user
+
+Updates user settings
+For example, to update the filter of the user, this json must be provided:
+
+    {
+      'twitter.filter': '+Z'
+    }
+
+    POST /user-settings
+
+Creates user settings for a new user.
+For example, to insert a new user, this json must be provided:
+
+    {
+      "twitter": {
+        "filter": "+Y",
+        "filterIsActive": true,
+        "credentials": {
+          "access_token_key": "atk-string",
+          "access_token_secret": "ats-string",
+          "consumer_key": "ck-string",
+          "consumer_secret": "cs-string",
+          "username": "twitter-username"
+        }
+      },
+      "pryv": {
+        "channelId": "channelID-string",
+        "folderId": "folderId-string",
+        "credentials": {
+          "auth": "auth-string",
+          "username": "pryv-username"
+        }
+      }
+    }
+
+    GET /auth-process-details
+
+Provides information about the OAuth procedure.
+For now is displays:
+
+    {
+      "url": "https://api.twitter.com/oauth/authorize",
+      "info": "pryv's token must be provided"
+    }
+
+For development purposes, this API call:
+
+	GET /users
+
+Provides the settings of all users in the db.
+
 
 ## Tests
 
