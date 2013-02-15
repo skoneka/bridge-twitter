@@ -21,7 +21,7 @@ describe('twitter gateway', function() {
           "access_token_secret": "ats-string",
           "consumer_key": "ck-string",
           "consumer_secret": "cs-string",
-          "username": "twitter-username"
+          "username": "twitter-user"
         }
       },
       "pryv": {
@@ -29,7 +29,7 @@ describe('twitter gateway', function() {
         "folderId": "TPZZHj5YuM",
         "credentials": {
           "auth": "auth-string",
-          "username": "pryv-username"
+          "username": "pryv-user"
         }
       }
     };
@@ -42,7 +42,7 @@ describe('twitter gateway', function() {
 
   it('should be able to get user\'s info', function(done) {
 
-    twitter.getUserData('pryv-username', function(result){
+    twitter.getUserData('pryv-user', function(result){
       should.exist(user);
       done();
     });
@@ -51,7 +51,7 @@ describe('twitter gateway', function() {
   it('should be able to get user\'s timeline from Twitter', function(done) {
 
     nock('https://api.twitter.com')
-      .get('/1.1/statuses/user_timeline.json?screen_name=twitter-username&count=200&include_rts=1')
+      .get('/1.1/statuses/user_timeline.json?screen_name=twitter-user&count=200&include_rts=1')
       .reply(200, 
         [{ created_at: 'Mon Jan 14 14:36:57 +0000 2013',
         id: 290829865081516000,
@@ -65,7 +65,7 @@ describe('twitter gateway', function() {
          }
         }]);
 
-    twitter.getUserTimeline('pryv-username', function(err, data) {
+    twitter.getUserTimeline('pryv-user', function(err, data) {
       should.exist(data);
       data.should.not.be.empty;
       done()

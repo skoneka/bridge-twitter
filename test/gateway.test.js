@@ -181,10 +181,10 @@ describe('PUT /user-settings/user', function(){
 
   it('update user info', function(done){
     request(app)
-      .put('/user-settings/pryv-user')
+      .put('/user-settings/pryv-username')
       .set('Accept', 'application/json')
       .send({
-        'twitter.filter': 'truc'
+        'twitter.filter': '+Z'
       })
       .expect('Content-Type', /json/)
       .expect(200)
