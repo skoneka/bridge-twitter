@@ -14,6 +14,67 @@ mongoose.connect('localhost', 'tg');
 //   console.log('connected to db...');
 // });
 
+var JSONSchema = {
+	"title": "User Settings Schema",
+	"type": "object",
+	"properties": {
+		"twitter": {
+			"type": "object",
+			"properties": {
+				"filter": {
+					"type": "string"
+				},
+				"filterIsActive": {
+					"type": "boolean"
+				},
+				"credentials": {
+					"type": "object",
+					"properties": {
+						"access_token_key": {
+							"type":"string"
+						},
+						"access_token_secret": {
+							"type":"string"
+						},
+						"consumer_key": {
+							"type":"string"
+						},
+						"consumer_secret": {
+							"type":"string"
+						},
+						"username": {
+							"type":"string"
+						}
+					}
+				}
+			}
+		},
+		"pryv": {
+			"type": "object",
+			"properties": {
+				"channelId": {
+					"type": "string"
+				},
+				"folderId": {
+					"type": "string"
+				},
+				"credentials": {
+					"type": "object",
+					"properties": {
+						"username": {
+							"type": "string"
+						},
+						"auth": {
+							"type": "string"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+module.exports.JSONSchema = JSONSchema;
+
 var schema = mongoose.Schema({
 	pryv: {
 		credentials: {
@@ -86,64 +147,5 @@ exports.updateUser = function(conditions, update, done) {
 };
 
 exports.readSchema = function(done) {
-	done({
-		"title": "User Settings Schema",
-		"type": "object",
-		"properties": {
-			"twitter": {
-				"type": "object",
-				"properties": {
-					"filter": {
-						"type": "string"
-					},
-					"filterIsActive": {
-						"type": "boolean"
-					},
-					"credentials": {
-						"type": "object",
-						"properties": {
-							"access_token_key": {
-								"type":"string"
-							},
-							"access_token_secret": {
-								"type":"string"
-							},
-							"consumer_key": {
-								"type":"string"
-							},
-							"consumer_secret": {
-								"type":"string"
-							},
-							"username": {
-								"type":"string"
-							}
-						}
-					}
-				}
-			},
-			"pryv": {
-				"type": "object",
-				"properties": {
-					"channelId": {
-						"type": "string"
-					},
-					"folderId": {
-						"type": "string"
-					},
-					"credentials": {
-						"type": "object",
-						"properties": {
-							"username": {
-								"type": "string"
-							},
-							"auth": {
-								"type": "string"
-							}
-						}
-					}
-				}
-			},
-			"required": ["twitter", "pryv"]
-		}
-	});
+	done(JSONSchema);
 };
