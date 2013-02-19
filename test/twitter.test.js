@@ -40,7 +40,7 @@ describe('twitter gateway', function() {
     });
   });
 
-  it('should be able to get user\'s info', function(done) {
+  it('should get user\'s info', function(done) {
 
     twitter.getUserData('pryv-user', function(result){
       should.exist(user);
@@ -48,7 +48,7 @@ describe('twitter gateway', function() {
     });
   });
 
-  it('should be able to get user\'s timeline from Twitter', function(done) {
+  it('should get user\'s timeline from Twitter', function(done) {
 
     nock('https://api.twitter.com')
       .get('/1.1/statuses/user_timeline.json?screen_name=twitter-user&count=200&include_rts=1')
@@ -72,7 +72,7 @@ describe('twitter gateway', function() {
     });
   });
 
-  it('should be able to format user\'s timeline according to pryv\'s api', function(done) {
+  it('should format user\'s timeline according to pryv\'s api', function(done) {
     twitter.formatUserTimeline(user, data, function(undefined, tweetsHistory) {
       should.exist(tweetsHistory);
       tweetsHistory.should.not.be.empty;
