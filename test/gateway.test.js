@@ -69,7 +69,7 @@ describe('POST /user-settings', function(){
       })
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(201)
       .end(function(err, res){
         if (err) return done(err);
         res.body.should.have.property('ok');
@@ -168,12 +168,12 @@ describe('GET /user-settings/user', function(){
     });
   });
 
-  it('should return info about non existent user', function(done){
+  it('should return 404 when asked about a non existent user', function(done){
     request(app)
       .get('/user-settings/testuser2')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
-      .expect(200)
+      .expect(404)
       .end(function(err, res){
         if (err) return done(err);
         res.body.error.should.equal('no such user');

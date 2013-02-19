@@ -16,7 +16,11 @@ exports.createUser = function(req, res) {
   //var username = req.params.username;
   var user = req.body.user;
   usersStorage.createUser(user, function(err, result){
-    if (err) res.statusCode = err;
+    if (err) {
+      res.statusCode = err;
+    } else {
+      res.statusCode = 201;
+    }
     res.send(result);
   });
 };
@@ -25,7 +29,10 @@ exports.createUser = function(req, res) {
 exports.readUser = function(req, res) {
   var username = req.params.username;
   usersStorage.readUser({'pryv.credentials.username':username}, function(result){
-    if (!result) return res.send({error:'no such user'});
+    if (!result) {
+      res.statusCode = 404;
+      return res.send({error:'no such user'});
+    }
     res.send(result);
   });
 };
