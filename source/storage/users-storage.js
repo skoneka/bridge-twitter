@@ -115,9 +115,10 @@ exports.createUser = function(user, done) {
 };
 
 exports.deleteUser = function(conditions, done) {
-	User.remove(conditions, function(err) {
+	User.remove(conditions, function(err, numAffected) {
 	  if (err) return done({'error':err});
-	  done({'ok':conditions._id});
+	  if (!numAffected) return done({'error':'nothing changed'});
+		done({'ok':'deleted','numAffected':numAffected});
 	});
 };
 

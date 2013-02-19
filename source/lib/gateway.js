@@ -39,6 +39,13 @@ exports.updateUser = function(req, res) {
 };
 
 
+exports.deleteUser = function(req, res) {
+  usersStorage.deleteUser(req.body, function(result){
+    res.send(result);
+  });
+};
+
+
 exports.transferUserTimeline = function(req, res) {
   var username = req.params.username;
   twitter.transferUserTimeline(username, function(err, data) {
