@@ -33,7 +33,7 @@ describe('twitter gateway', function() {
         }
       }
     };
-    usersStorage.createUser(user, function(result){
+    usersStorage.createUser(user, function(err, result){
       result.should.have.property('ok');
       id = result.ok;
       done();

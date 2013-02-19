@@ -4,7 +4,8 @@
 
 var mongoose = require('mongoose'),
 		config = require('../utils/config'),
-		util = require('util');
+		util = require('util'),
+		JSV = require('JSV').JSV;
 
 mongoose.connect('localhost', 'tg');
 
@@ -15,57 +16,68 @@ mongoose.connect('localhost', 'tg');
 // });
 
 var JSONSchema = {
-	"title": "User Settings Schema",
-	"type": "object",
-	"properties": {
-		"twitter": {
-			"type": "object",
-			"properties": {
-				"filter": {
-					"type": "string"
+	title: 'User Settings Schema',
+	type: 'object',
+	properties: {
+		'twitter': {
+			type: 'object',
+			properties: {
+				'filter': {
+					type: 'string'
 				},
-				"filterIsActive": {
-					"type": "boolean"
+				'filterIsActive': {
+					type: 'boolean'
 				},
-				"credentials": {
-					"type": "object",
-					"properties": {
-						"access_token_key": {
-							"type":"string"
+				'credentials': {
+					type: 'object',
+					required: true,
+					properties: {
+						'access_token_key': {
+							type:'string',
+							required: true
 						},
-						"access_token_secret": {
-							"type":"string"
+						'access_token_secret': {
+							type:'string',
+							required: true
 						},
-						"consumer_key": {
-							"type":"string"
+						'consumer_key': {
+							type:'string',
+							required: true
 						},
-						"consumer_secret": {
-							"type":"string"
+						'consumer_secret': {
+							type:'string',
+							required: true
 						},
-						"username": {
-							"type":"string"
+						'username': {
+							type:'string',
+							required: true
 						}
 					}
 				}
 			}
 		},
-		"pryv": {
-			"type": "object",
-			"properties": {
-				"channelId": {
-					"type": "string"
+		'pryv': {
+			type: 'object',
+			properties: {
+				'channelId': {
+					type: 'string',
+					required: true
 				},
-				"folderId": {
-					"type": "string"
+				'folderId': {
+					type: 'string',
+					required: true
 				},
-				"credentials": {
-					"type": "object",
-					"properties": {
-						"username": {
-							"type": "string"
+				'credentials': {
+					type: 'object',
+					required: true,
+					properties: {
+						'username': {
+							type: 'string',
+							required: true
 						},
-						"auth": {
-							"type": "string"
+						'auth': {
+							type: 'string',
+							required: true
 						}
 					}
 				}
@@ -107,10 +119,15 @@ exports.listUsers = function(done) {
 };
 
 exports.createUser = function(user, done) {
+	var env = JSV.createEnvironment();
+	var report = env.validate(user, JSONSchema);
+	if (report.errors.length !== 0) {
+		return done(400, { 'id': 'invalid-parameters-structure', 'message': 'check the structure of the provided JSON', 'data': report.errors });
+	}
   var usr = new User(user);
   usr.save(function (err) {
-    if (err) return done({'error':err});
-    done({'ok':usr._id});
+    if (err) return done(res, {'error':err});
+    done(undefined, {'ok':usr._id});
   });
 };
 
@@ -128,16 +145,6 @@ exports.readUser = function(conditions, done) {
 		done(doc);
 	});
 };
-
-// exports.updateUser = function(conditions, update, done) {
-// 	var options = { multi: true };
-// 	User.update(conditions, update, options, function(err, numAffected){
-// 		if (err) return done({'error':err});
-// 		if (!numAffected) return done({'error':'nothing changed'});
-// 		done({'ok':'updated','numAffected':numAffected});
-// 	});
-// };
-
 
 exports.updateUser = function(conditions, update, done) {
 	User.update(conditions, { $set: update }, function(err, numAffected){

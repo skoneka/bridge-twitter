@@ -8,7 +8,7 @@ var should = require('should'),
 
 
 describe('GET /auth-process-details', function(){
-  it('respond with json describing twitter\'s OAuth procedure', function(done){
+  it('should respond with json describing twitter\'s OAuth procedure', function(done){
     request(app)
       .get('/auth-process-details')
       .set('Accept', 'application/json')
@@ -24,7 +24,7 @@ describe('GET /auth-process-details', function(){
 })
 
 describe('GET /user-settings-schema', function(){
-  it('provide schema of a user description', function(done){
+  it('should provide a valid schema of a user description', function(done){
     request(app)
       .get('/user-settings-schema')
       .set('Accept', 'application/json')
@@ -41,11 +41,7 @@ describe('GET /user-settings-schema', function(){
 
 describe('POST /user-settings', function(){
   var id;
-
-  //it('must return an error if the data is invalid')
-  // super test, j'attends un 400
-
-  it('insert new user in DB', function(done){
+  it('should insert new user settings in DB', function(done){
     request(app)
       .post('/user-settings')
       .send({
@@ -79,9 +75,45 @@ describe('POST /user-settings', function(){
         res.body.should.have.property('ok');
         id = res.body.ok;
         usersStorage.readUser({'_id':id}, function(result){
-          console.log(result);
           if (result) done();
         });
+    });
+  })
+  it('should detect wrong JSON when POSTing /user-settings', function(done){
+    
+    //it('must return an error if the data is invalid')
+    // super test, j'attends un 400
+    
+    request(app)
+      .post('/user-settings')
+      .send({
+        'user': {
+          'pryv': {
+            'credentials': {
+              'username':'pryv_user',
+              'auth':'auth_string'
+            },
+            'channelId':'TePRIdMlgf',
+            'folderId':'TPZZHj5YuM'
+          },
+          'twitter': {
+            'filter': '+Y',
+            'filterIsActive': true,
+            'consumer_key': 'ck_string',
+            'consumer_secret':'cs_string',
+            'access_token_key':'atk_string',
+            'access_token_secret':'ats_string',
+            'username':'twitter_user'
+          }
+        } 
+      })
+      .set('Accept', 'application/json')
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .end(function(err, res){
+        if (err) return done(err);
+        res.body.should.have.property('id');
+        done();
     });
   })
   after(function(done){
@@ -116,27 +148,27 @@ describe('GET /user-settings/user', function(){
         }
       }
     };
-    usersStorage.createUser(user, function(result){
+    usersStorage.createUser(user, function(err, result){
       result.should.have.property('ok');
       id = result.ok;
       done();
     });
   });
 
-  it('return info about user', function(done){
+  it('should return info about user', function(done){
     request(app)
-      .get('/user-settings/jonmaim')
+      .get('/user-settings/pryv-username')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
       .end(function(err, res){
         if (err) return done(err);
-        res.body.pryv.credentials.username.should.equal('jonmaim');
+        res.body.pryv.credentials.username.should.equal('pryv-username');
         done();
     });
   });
 
-  it('return info about non existent user', function(done){
+  it('should return info about non existent user', function(done){
     request(app)
       .get('/user-settings/testuser2')
       .set('Accept', 'application/json')
@@ -181,14 +213,14 @@ describe('PUT /user-settings/user', function(){
         }
       }
     };
-    usersStorage.createUser(user, function(result){
+    usersStorage.createUser(user, function(err, result){
       result.should.have.property('ok');
       id = result.ok;
       done();
     });
   });
 
-  it('update user info', function(done){
+  it('should update user info', function(done){
     request(app)
       .put('/user-settings/pryv-username')
       .set('Accept', 'application/json')
