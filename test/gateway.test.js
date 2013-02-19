@@ -31,7 +31,6 @@ describe('GET /user-settings-schema', function(){
       .expect('Content-Type', /json/)
       .expect(200)
       .end(function(err, res){
-        console.log(res);
         if (err) return done(err);
         var env = JSV.createEnvironment();
         var report = env.validate(res, usersStorage.JSONSchema);
@@ -79,7 +78,10 @@ describe('POST /user-settings', function(){
         if (err) return done(err);
         res.body.should.have.property('ok');
         id = res.body.ok;
-        done();
+        usersStorage.readUser({'_id':id}, function(result){
+          console.log(result);
+          if (result) done();
+        });
     });
   })
   after(function(done){
