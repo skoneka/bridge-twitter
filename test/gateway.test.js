@@ -3,7 +3,8 @@ var should = require('should'),
     request = require('supertest'),
     gateway = require('../source/lib/gateway'),
     usersStorage = require('../source/storage/users-storage'),
-    app = require('../source/app');
+    app = require('../source/app'),
+    JSV = require('JSV').JSV;
 
 
 describe('GET /auth-process-details', function(){
@@ -30,15 +31,21 @@ describe('GET /user-settings-schema', function(){
       .expect('Content-Type', /json/)
       .expect(200)
       .end(function(err, res){
+        console.log(res);
         if (err) return done(err);
-        //res.body.should.have.property('pryv');
-        done();
+        var env = JSV.createEnvironment();
+        var report = env.validate(res, usersStorage.JSONSchema);
+        if (report.errors.length === 0) return done();
     });
   })
 })
 
 describe('POST /user-settings', function(){
   var id;
+
+  //it('must return an error if the data is invalid')
+  // super test, j'attends un 400
+
   it('insert new user in DB', function(done){
     request(app)
       .post('/user-settings')
