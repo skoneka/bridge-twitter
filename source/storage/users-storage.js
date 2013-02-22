@@ -146,11 +146,30 @@ exports.readUser = function(conditions, done) {
 	});
 };
 
+// exports.updateUser = function(conditions, update, done) {
+// 	User.update(conditions, { $set: update }, function(err, numAffected){
+// 		if (err) return done({'error':err});
+// 		if (!numAffected) return done({'error':'nothing changed'});
+// 		done({'ok':'updated','numAffected':numAffected});
+// 	});
+// };
+
 exports.updateUser = function(conditions, update, done) {
-	User.update(conditions, { $set: update }, function(err, numAffected){
+	User.findOne(conditions, function (err, doc){
 		if (err) return done({'error':err});
-		if (!numAffected) return done({'error':'nothing changed'});
-		done({'ok':'updated','numAffected':numAffected});
+		for(var prop in update) {
+		  if(update.hasOwnProperty(prop)) {
+		    // console.log(prop); // will log "Business Books" etc.
+		    for(var propt in update[prop]) {
+		    	if(update[prop].hasOwnProperty(propt)) {
+		    		// console.dir(propt);
+		    		doc[prop][propt] = update[prop][propt];
+		    	}
+		    }
+		  }
+		}
+		doc.save();
+		done({'ok':'updated'});
 	});
 };
 

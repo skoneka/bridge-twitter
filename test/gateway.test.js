@@ -225,16 +225,22 @@ describe('PUT /user-settings/user', function(){
       .put('/user-settings/pryv-username')
       .set('Accept', 'application/json')
       .send({
-        'twitter.filter': '+Z'
+        'twitter': {
+          'filter': 'new filter'
+        },
+        'pryv': {
+          'folderId': 'new folderId'
+        }
       })
       .expect('Content-Type', /json/)
       .expect(200)
       .end(function(err, res){
         if (err) return done(err);
-        res.body.numAffected.should.equal(1);
         done();
     });
   });
+
+  //TODO: test if the user info has indeed been modified
 
   after(function(done){
     usersStorage.deleteUser({_id:id}, function(result){
