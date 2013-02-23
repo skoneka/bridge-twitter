@@ -5,7 +5,8 @@
 var mongoose = require('mongoose'),
 		config = require('../utils/config'),
 		util = require('util'),
-		JSV = require('JSV').JSV;
+		JSV = require('JSV').JSV,
+		_ = require('lodash');
 
 mongoose.connect('localhost', 'tg');
 
@@ -149,6 +150,7 @@ exports.readUser = function(conditions, done) {
 exports.updateUser = function(conditions, update, done) {
 	User.findOne(conditions, function (err, doc){
 		if (err) return done({'error':err});
+		//console.log(_.isEqual(_.defaults(JSON.parse(JSON.stringify(doc)), update),doc));
 		for(var prop in update) {
 		  if(update.hasOwnProperty(prop)) {
 		    for(var propt in update[prop]) {

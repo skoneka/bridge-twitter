@@ -249,6 +249,24 @@ describe('PUT /user-settings/user', function(){
     });
   });
 
+  // it('should detect wrong JSON when updating', function(done){
+  //   request(app)
+  //     .put('/user-settings/pryv-username')
+  //     .set('Accept', 'application/json')
+  //     .send({
+  //       'truc': {
+  //         'filter': 'new filter'
+  //       }
+  //     })
+  //     .expect('Content-Type', /json/)
+  //     .expect(400)
+  //     .end(function(err, res){
+  //       if (err) return done(err);
+  //       res.should.have.property('id');
+  //       done();
+  //   });
+  // });
+
   after(function(done){
     usersStorage.deleteUser({_id:id}, function(result){
       result.should.have.property('ok');

@@ -3,37 +3,45 @@ var twitter = require('ntwitter'),
     usersStorage = require('../storage/users-storage'),
     pryv = require('./pryv');
 
+var openedStreams = {};
+module.exports.openedStreams = openedStreams;
 
-exports.streamUserTweets = function(users) {
+exports.streamTweetsFromExistingUsers = function(users) {
   var len = users.length;
-
   for (var i=0; i<len; i++ ) {
-    var currentUser = users[i];
-    var twit = new twitter({
-      consumer_key: currentUser.twitter.credentials.consumer_key,
-      consumer_secret: currentUser.twitter.credentials.consumer_secret,
-      access_token_key: currentUser.twitter.credentials.access_token_key,
-      access_token_secret: currentUser.twitter.credentials.access_token_secret
-    });
-
-    twit.stream('user', currentUser.pryv, {track:currentUser.twitter.credentials.username}, function(stream, pryvUserData) {
-      stream.on('data', function (data) {
-        pryv.forwardTweet(pryvUserData, data, function(response) {
-          console.log('Tweet successfully stored on Pryv with id ' + response.id);
-        });
-      });
-      stream.on('end', function (response) {
-        // Handle a disconnection
-      });
-      stream.on('destroy', function (response) {
-        // Handle a 'silent' disconnection from Twitter, no end/error event fired
-      });
-      stream.on('error', function(error, code) {
-        console.log('Error: ' + error + ': ' + code);
-      });
-    });
+    streamUserTweets(users[i]);
   }
 };
+
+function streamUserTweets (user) {
+
+  var currentUsername = user.pryv.credentials.username;
+
+  openedStreams[currentUsername] = new twitter({
+    consumer_key: user.twitter.credentials.consumer_key,
+    consumer_secret: user.twitter.credentials.consumer_secret,
+    access_token_key: user.twitter.credentials.access_token_key,
+    access_token_secret: user.twitter.credentials.access_token_secret
+  });
+
+  openedStreams[currentUsername].stream('user', user.pryv, {track:user.twitter.credentials.username}, function(stream, pryvUserData) {
+    stream.on('data', function (data) {
+      pryv.forwardTweet(pryvUserData, data, function(response) {
+        console.log('Tweet successfully stored on Pryv with id ' + response.id);
+      });
+    });
+    stream.on('end', function (response) {
+      // Handle a disconnection
+    });
+    stream.on('destroy', function (response) {
+      // Handle a 'silent' disconnection from Twitter, no end/error event fired
+    });
+    stream.on('error', function(error, code) {
+      console.log('Error: ' + error + ': ' + code);
+    });
+  });
+}
+module.exports.streamUserTweets = streamUserTweets;
 
 exports.transferUserTimeline = function(username, done) {
 

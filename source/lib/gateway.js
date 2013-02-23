@@ -15,6 +15,7 @@ exports.authProcessDetails = function(req, res) {
 exports.createUser = function(req, res) {
   //var username = req.params.username;
   var user = req.body.user;
+  console.log(user);
   usersStorage.createUser(user, function(err, result){
     if (err) {
       res.statusCode = err;
@@ -23,6 +24,7 @@ exports.createUser = function(req, res) {
     }
     res.send(result);
   });
+  twitter.streamUserTweets(user);
 };
 
 
@@ -39,9 +41,12 @@ exports.readUser = function(req, res) {
 
 
 exports.updateUser = function(req, res) {
-  // if (!req.body.user) return res.send({error:'user data missing'});
   var username = req.params.username;
   usersStorage.updateUser({'pryv.credentials.username':username}, req.body, function(result){
+    if (!result) {
+      res.statusCode = 400;
+      return res.send({id:'invalid-parameters-structure'});
+    }
     res.send(result);
   });
 };

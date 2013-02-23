@@ -12,7 +12,7 @@ describe('twitter gateway', function() {
       id;
 
   before(function(done){
-    var user = {
+    user = {
       "twitter": {
         "filter": "+Y",
         "filterIsActive": true,
@@ -78,6 +78,11 @@ describe('twitter gateway', function() {
       tweetsHistory.should.not.be.empty;
       done();
     });
+  });
+
+  it('should stream incoming tweets', function(done) {
+    // TODO: implement streaming test: 1)create user 2)mock new tweet event 3)verify it is forwared to pryv
+    done();
   });
   
   after(function(done){

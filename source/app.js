@@ -30,7 +30,7 @@ app.configure('production', function() {
 
 
 usersStorage.listUsers(function(users){
-  twitter.streamUserTweets(users);
+  twitter.streamTweetsFromExistingUsers(users);
 });
 
 
