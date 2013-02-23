@@ -240,7 +240,14 @@ describe('PUT /user-settings/user', function(){
     });
   });
 
-  //TODO: test if the user info has indeed been modified
+  it('should find updated info in db', function(done){
+    usersStorage.readUser({'_id':id}, function(result){
+      if (result) {
+        result.twitter.filter.should.equal('new filter');
+        done();
+      }
+    });
+  });
 
   after(function(done){
     usersStorage.deleteUser({_id:id}, function(result){

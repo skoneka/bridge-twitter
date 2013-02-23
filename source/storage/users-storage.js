@@ -159,10 +159,8 @@ exports.updateUser = function(conditions, update, done) {
 		if (err) return done({'error':err});
 		for(var prop in update) {
 		  if(update.hasOwnProperty(prop)) {
-		    // console.log(prop); // will log "Business Books" etc.
 		    for(var propt in update[prop]) {
 		    	if(update[prop].hasOwnProperty(propt)) {
-		    		// console.dir(propt);
 		    		doc[prop][propt] = update[prop][propt];
 		    	}
 		    }
