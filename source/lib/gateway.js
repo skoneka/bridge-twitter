@@ -15,16 +15,15 @@ exports.authProcessDetails = function(req, res) {
 exports.createUser = function(req, res) {
   //var username = req.params.username;
   var user = req.body.user;
-  console.log(user);
   usersStorage.createUser(user, function(err, result){
     if (err) {
       res.statusCode = err;
     } else {
       res.statusCode = 201;
+      twitter.streamUserTweets(user);
     }
     res.send(result);
   });
-  twitter.streamUserTweets(user);
 };
 
 
