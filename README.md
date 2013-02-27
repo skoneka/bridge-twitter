@@ -9,6 +9,8 @@ To get the external dependencies, run:
 
     $npm install
 
+N.B. Mongodb needs to be installed locally
+
 
 ## Usage
 
