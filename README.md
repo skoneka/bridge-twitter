@@ -26,7 +26,7 @@ All tweets are stored as event with this specific type
     }
 
 No definitive data structure has been decided yet.
-To simplify things, we could use the same structure as twitter's api and simply remove unnessecessary data with `delete object.property;`
+To simplify things, we could use the same structure as twitter's api and simply remove unnecessary data with `delete object.property;`
 
 Here's an example of the event's value property:
 
