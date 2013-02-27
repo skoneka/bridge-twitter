@@ -26,9 +26,11 @@ function streamUserTweets (user) {
 
   openedStreams[currentUsername].stream('user', user.pryv, {track:user.twitter.credentials.username}, function(stream, pryvUserData) {
     stream.on('data', function (data) {
-      pryv.forwardTweet(pryvUserData, data, function(response) {
-        console.log('Tweet successfully stored on Pryv with id ' + response.id);
-      });
+      if (!data.hasOwnProperty('event')) {
+        pryv.forwardTweet(pryvUserData, data, function(response) {
+          console.log('Tweet successfully stored on Pryv with id ' + response.id);
+        });
+      }
     });
     stream.on('end', function (response) {
       // Handle a disconnection
