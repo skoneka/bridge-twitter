@@ -9,7 +9,7 @@ var should = require('should'),
       "folderId": "TPZZHj5YuM",
       "credentials": {
         "username": "jonmaim",
-        "auth": "auth-string"
+        "auth": "VVEQmJD5T5"
       }
     },
     data = {
@@ -47,6 +47,19 @@ var should = require('should'),
         text: 'this is another test',
         screen_name: 'testuser2'
       }
+    }],
+    wrongFormatedData = [{
+      ttempRefId: '0',
+      folderId: 'TPZZHj5YuM',
+      type: {
+        class: 'note',
+        format: 'twitter'
+      },
+      value: {
+        id: '291588476627976192',   // string ID to handle JS parsing problems
+        text: 'this is a test',
+        screen_name: 'xa4loz'
+      }
     }];
 
 
@@ -75,6 +88,17 @@ describe('forwardTweetsHistory', function(){
     pryv.forwardTweetsHistory(pryvUser, JSON.stringify(formatedData), function(err, response){
       response.should.have.property('0');
       response.should.have.property('1');
+      done();
+    });
+  })
+
+  nock('https://jonmaim.rec.la')
+    .post('/TePRIdMlgf/events/batch [{"ttempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"xa4loz"}}]')
+    .reply(200, {"id": "invalid-parameters-format","message": "The format of some or all events is invalid.","data": [{"property": "0.tempRefId","message": "is missing and it is required"},{"property": "0","message": "undefinedThe property ttempRefId is not defined in the schema and the schema does not allow additional properties"}]}, {'Content-Type': 'application/json'});
+
+  it('should handle INVALID_PARAMETERS_FORMAT response', function(done){
+    pryv.forwardTweetsHistory(pryvUser, JSON.stringify(wrongFormatedData), function(err, response){
+      response.should.have.property('id');
       done();
     });
   })

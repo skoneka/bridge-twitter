@@ -4,7 +4,32 @@ var should = require('should'),
     gateway = require('../source/lib/gateway'),
     usersStorage = require('../source/storage/users-storage'),
     app = require('../source/app'),
-    JSV = require('JSV').JSV;
+    JSV = require('JSV').JSV,
+    util = require('util'),
+
+    userSettingsData = {
+        'user': {
+          'pryv': {
+            'credentials': {
+              'username':'pryv_user',
+              'auth':'auth_string'
+            },
+            'channelId':'TePRIdMlgf',
+            'folderId':'TPZZHj5YuM'
+          },
+          'twitter': {
+            'filter': '+Y',
+            'filterIsActive': true,
+            'credentials': {
+              'consumer_key': 'ck_string',
+              'consumer_secret':'cs_string',
+              'access_token_key':'atk_string',
+              'access_token_secret':'ats_string',
+              'username':'twitter_user'
+            }
+          }
+        }
+      };
 
 
 describe('GET /auth-process-details', function(){
@@ -33,7 +58,7 @@ describe('GET /user-settings-schema', function(){
       .end(function(err, res){
         if (err) return done(err);
         var env = JSV.createEnvironment();
-        var report = env.validate(res, usersStorage.JSONSchema);
+        var report = env.validate(userSettingsData.user, res.body);
         if (report.errors.length === 0) return done();
     });
   })
@@ -44,29 +69,7 @@ describe('POST /user-settings', function(){
   it('should insert new user settings in DB', function(done){
     request(app)
       .post('/user-settings')
-      .send({
-        'user': {
-          'pryv': {
-            'credentials': {
-              'username':'pryv_user',
-              'auth':'auth_string'
-            },
-            'channelId':'TePRIdMlgf',
-            'folderId':'TPZZHj5YuM'
-          },
-          'twitter': {
-            'filter': '+Y',
-            'filterIsActive': true,
-            'credentials': {
-              'consumer_key': 'ck_string',
-              'consumer_secret':'cs_string',
-              'access_token_key':'atk_string',
-              'access_token_secret':'ats_string',
-              'username':'twitter_user'
-            }
-          }
-        }
-      })
+      .send(userSettingsData)
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(201)
@@ -80,10 +83,6 @@ describe('POST /user-settings', function(){
     });
   })
   it('should detect wrong JSON when POSTing /user-settings', function(done){
-    
-    //it('must return an error if the data is invalid')
-    // super test, j'attends un 400
-    
     request(app)
       .post('/user-settings')
       .send({
@@ -249,23 +248,23 @@ describe('PUT /user-settings/user', function(){
     });
   });
 
-  // it('should detect wrong JSON when updating', function(done){
-  //   request(app)
-  //     .put('/user-settings/pryv-username')
-  //     .set('Accept', 'application/json')
-  //     .send({
-  //       'truc': {
-  //         'filter': 'new filter'
-  //       }
-  //     })
-  //     .expect('Content-Type', /json/)
-  //     .expect(400)
-  //     .end(function(err, res){
-  //       if (err) return done(err);
-  //       res.should.have.property('id');
-  //       done();
-  //   });
-  // });
+  it('should detect wrong JSON when updating', function(done){
+    request(app)
+      .put('/user-settings/pryv-username')
+      .set('Accept', 'application/json')
+      .send({
+        'truc': {
+          'filter': 'new filter'
+        }
+      })
+      .expect('Content-Type', /json/)
+      .expect(400)
+      .end(function(err, res){
+        if (err) return done(err);
+        res.body.should.have.property('id');
+        done();
+    });
+  });
 
   after(function(done){
     usersStorage.deleteUser({_id:id}, function(result){

@@ -6,6 +6,7 @@ var mongoose = require('mongoose'),
 		config = require('../utils/config'),
 		util = require('util'),
 		JSV = require('JSV').JSV,
+		usersSchema = require('../schema/users-schema'),
 		_ = require('lodash');
 
 mongoose.connect('localhost', 'tg');
@@ -15,78 +16,6 @@ mongoose.connect('localhost', 'tg');
 // db.once('open', function callback () {
 //   console.log('connected to db...');
 // });
-
-var JSONSchema = {
-	title: 'User Settings Schema',
-	type: 'object',
-	properties: {
-		'twitter': {
-			type: 'object',
-			properties: {
-				'filter': {
-					type: 'string'
-				},
-				'filterIsActive': {
-					type: 'boolean'
-				},
-				'credentials': {
-					type: 'object',
-					required: true,
-					properties: {
-						'access_token_key': {
-							type:'string',
-							required: true
-						},
-						'access_token_secret': {
-							type:'string',
-							required: true
-						},
-						'consumer_key': {
-							type:'string',
-							required: true
-						},
-						'consumer_secret': {
-							type:'string',
-							required: true
-						},
-						'username': {
-							type:'string',
-							required: true
-						}
-					}
-				}
-			}
-		},
-		'pryv': {
-			type: 'object',
-			properties: {
-				'channelId': {
-					type: 'string',
-					required: true
-				},
-				'folderId': {
-					type: 'string',
-					required: true
-				},
-				'credentials': {
-					type: 'object',
-					required: true,
-					properties: {
-						'username': {
-							type: 'string',
-							required: true
-						},
-						'auth': {
-							type: 'string',
-							required: true
-						}
-					}
-				}
-			}
-		}
-	}
-}
-module.exports.JSONSchema = JSONSchema;
 
 var schema = mongoose.Schema({
 	pryv: {
@@ -121,7 +50,7 @@ exports.listUsers = function(done) {
 
 exports.createUser = function(user, done) {
 	var env = JSV.createEnvironment();
-	var report = env.validate(user, JSONSchema);
+	var report = env.validate(user, usersSchema('create'));
 	if (report.errors.length !== 0) {
 		return done(400, { 'id': 'invalid-parameters-structure', 'message': 'check the structure of the provided JSON', 'data': report.errors });
 	}
@@ -148,9 +77,14 @@ exports.readUser = function(conditions, done) {
 };
 
 exports.updateUser = function(conditions, update, done) {
+	var env = JSV.createEnvironment();
+	var report = env.validate(update, usersSchema());
+	// console.dir(report.errors);
+	if (report.errors.length !== 0) {
+		return done(400, { 'id': 'invalid-parameters-structure', 'message': 'check the structure of the provided JSON', 'data': report.errors });
+	}
 	User.findOne(conditions, function (err, doc){
 		if (err) return done({'error':err});
-		//console.log(_.isEqual(_.defaults(JSON.parse(JSON.stringify(doc)), update),doc));
 		for(var prop in update) {
 		  if(update.hasOwnProperty(prop)) {
 		    for(var propt in update[prop]) {
@@ -161,10 +95,10 @@ exports.updateUser = function(conditions, update, done) {
 		  }
 		}
 		doc.save();
-		done({'ok':'updated'});
+		done(undefined, {'ok':'updated'});
 	});
 };
 
 exports.readSchema = function(done) {
-	done(JSONSchema);
+	done(usersSchema('create'));
 };

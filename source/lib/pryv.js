@@ -44,6 +44,7 @@ exports.forwardTweetsHistory = function(user, data, done) {
         done(undefined, res.body);
       } else {
         console.log('error: ' + res.text);
+        done(undefined, res.body);
       }
     });
 };

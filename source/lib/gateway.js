@@ -41,9 +41,9 @@ exports.readUser = function(req, res) {
 
 exports.updateUser = function(req, res) {
   var username = req.params.username;
-  usersStorage.updateUser({'pryv.credentials.username':username}, req.body, function(result){
-    if (!result) {
-      res.statusCode = 400;
+  usersStorage.updateUser({'pryv.credentials.username':username}, req.body, function(err, result){
+    if (err) {
+      res.statusCode = err;
       return res.send({id:'invalid-parameters-structure'});
     }
     res.send(result);
