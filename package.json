@@ -13,9 +13,13 @@
     "ejs": "*"
   },
   "devDependencies": {
+    "blanket": "*",
     "mocha": "1.7.x",
     "supertest": "0.5.x",
     "nock": "0.14.x",
     "should": "*"
+  },
+  "scripts":{
+    "blanket":{"pattern": "/twitter-gateway/source/"}
   }
 }
