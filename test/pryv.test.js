@@ -11,6 +11,14 @@ var should = require('should'),
         "username": "jonmaim",
         "auth": "VVEQmJD5T5"
       }
+    }
+    pryvUser2 = {
+      "channelId": "TePRIdMlgf",
+      "folderId": "TPZZHj5YuM",
+      "credentials": {
+        "username": "jonmaim",
+        "auth": ""
+      }
     },
     data = {
       'created_at': 'Mon Jan 14 16:36:10 +0000 2013',
@@ -82,23 +90,23 @@ describe('forwardTweetsHistory', function(){
 
   nock('https://jonmaim.rec.la')
     .post('/TePRIdMlgf/events/batch [{"time":1358181370,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181371,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
-    .reply(200, { '0': { id: 'eTaUhq6IgM' }, '1': { id: 'VV5IUhio-pM' } }, {'Content-Type': 'application/json'});
+    .reply(200, { '0': { id: 'eTaUhq6IgM' } }, {'Content-Type': 'application/json'});
 
   it('should send a batch of events to the activity server', function(done){
     pryv.forwardTweetsHistory(pryvUser, JSON.stringify(formatedData), function(err, response){
       response.should.have.property('0');
-      response.should.have.property('1');
       done();
     });
   })
 
   nock('https://jonmaim.rec.la')
-    .post('/TePRIdMlgf/events/batch [{"ttempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"xa4loz"}}]')
-    .reply(200, {"id": "invalid-parameters-format","message": "The format of some or all events is invalid.","data": [{"property": "0.tempRefId","message": "is missing and it is required"},{"property": "0","message": "undefinedThe property ttempRefId is not defined in the schema and the schema does not allow additional properties"}]}, {'Content-Type': 'application/json'});
+    .post('/TePRIdMlgf/events/batch [{"time":1358181370,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181371,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
+    .reply(200, { id: 'invalid-access-token',
+  message: 'The access token is missing: expected an "Authorization" header or an "auth" query string parameter.' }, {'Content-Type': 'application/json'});
 
-  it('should handle INVALID_PARAMETERS_FORMAT response', function(done){
-    pryv.forwardTweetsHistory(pryvUser, JSON.stringify(wrongFormatedData), function(err, response){
-      response.should.have.property('id');
+  it('should report INVALID_ACCESS_TOKEN response', function(done){
+    pryv.forwardTweetsHistory(pryvUser2, JSON.stringify(formatedData), function(err, response){
+      response.should.have.property('id', 'invalid-access-token')
       done();
     });
   })

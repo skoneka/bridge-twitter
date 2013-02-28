@@ -21,7 +21,7 @@ exports.forwardTweet = function(user, data, done) {
         .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events')
         .set('Authorization', user.credentials.auth)
         .send(tweet)
-        .on('error', function(err) {console.log('ERROR!!');})
+        .on('error', function(err) {console.log('connection error');})
         .end(function(res){
           if (res.ok) {
             done(res.body);
@@ -43,7 +43,7 @@ exports.forwardTweetsHistory = function(user, data, done) {
       if (res.ok) {
         done(undefined, res.body);
       } else {
-        console.log('error: ' + res.text);
+        //console.log('error: ' + res.text);
         done(undefined, res.body);
       }
     });
