@@ -12,7 +12,8 @@
     "superagent": "0.12.x",
     "ejs": "*",
     "mongoose": "3.5",
-    "nconf": "*"
+    "nconf": "*",
+    "JSV":"*"
   },
   "devDependencies": {
     "blanket": "*",
