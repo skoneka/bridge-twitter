@@ -11,7 +11,8 @@
     "async": "0.1.x",
     "superagent": "0.12.x",
     "ejs": "*",
-    "mongoose": "3.5"
+    "mongoose": "3.5",
+    "nconf": "*"
   },
   "devDependencies": {
     "blanket": "*",
