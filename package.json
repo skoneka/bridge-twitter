@@ -13,7 +13,8 @@
     "ejs": "*",
     "mongoose": "3.5",
     "nconf": "*",
-    "JSV":"*"
+    "JSV": "*",
+    "lodash": "*"
   },
   "devDependencies": {
     "blanket": "*",
