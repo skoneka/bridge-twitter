@@ -1,7 +1,8 @@
 var should = require('should'),
     nock = require('nock'),
     usersStorage = require('../source/storage/users-storage'),
-    twitter = require('../source/lib/twitter');
+    twitter = require('../source/lib/twitter'),
+    nTwitter = require('ntwitter');
 
 
 describe('twitter gateway', function() {
@@ -81,7 +82,12 @@ describe('twitter gateway', function() {
   });
 
   it('should stream incoming tweets', function(done) {
-    // TODO: implement streaming test: 1)create user 2)mock new tweet event 3)verify it is forwared to pryv
+
+    // TODO: implement streaming test: 1)create user 2)mock new tweet event 3)verify it is forwarded to pryv
+
+    // twitter.openedStreams['jonmaim'].updateStatus('tesssssst', function (err, data) {
+    //   done();
+    // });
     done();
   });
   
