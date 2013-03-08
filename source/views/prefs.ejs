@@ -146,7 +146,7 @@
           You don't seem to have any associated Twitter account.<br /><a href="/auth">Authorize PrYv to access your twitter account</a>
         <% } else { %>
           PrYv is connected to your twitter account <b><%= result.twitter.credentials.username %></b>.<br />
-          To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">your twitter settings</a><br /><br />
+          To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">your twitter settings</a> and reload this page (twice)<br /><br />
           <button class="btn" type="button" onclick="forwardTweetsHistory()">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
           <div id="importResult"></div>
         <% } %>
