@@ -19,12 +19,10 @@ var should = require('should'),
           },
           'twitter': {
             'filter': '+Y',
-            'filterIsActive': true,
+            'filterIsActive': 'true',
             'credentials': {
-              'consumer_key': 'ck_string',
-              'consumer_secret':'cs_string',
-              'access_token_key':'atk_string',
-              'access_token_secret':'ats_string',
+              'accessToken': 'atk-string',
+              'accessSecret': 'ats-string',
               'username':'twitter_user'
             }
           }
@@ -97,11 +95,9 @@ describe('POST /user-settings', function(){
           },
           'twitter': {
             'filter': '+Y',
-            'filterIsActive': true,
-            'consumer_key': 'ck_string',
-            'consumer_secret':'cs_string',
-            'access_token_key':'atk_string',
-            'access_token_secret':'ats_string',
+            'filterIsActive': 'true',
+            'accessToken': 'atk-string',
+            'accessSecret': 'ats-string',
             'username':'twitter_user'
           }
         } 
@@ -129,12 +125,10 @@ describe('GET /user-settings/user', function(){
     var user = {
       "twitter": {
         "filter": "+Y",
-        "filterIsActive": true,
+        "filterIsActive": 'true',
         "credentials": {
-          "access_token_key": "atk-string",
-          "access_token_secret": "ats-string",
-          "consumer_key": "ck-string",
-          "consumer_secret": "cs-string",
+          "accessToken": "atk-string",
+          "accessSecret": "ats-string",
           "username": "twitter-username"
         }
       },
@@ -194,12 +188,10 @@ describe('PUT /user-settings/user', function(){
     var user = {
       "twitter": {
         "filter": "+Y",
-        "filterIsActive": true,
+        "filterIsActive": 'true',
         "credentials": {
-          "access_token_key": "atk-string",
-          "access_token_secret": "ats-string",
-          "consumer_key": "ck-string",
-          "consumer_secret": "cs-string",
+          "accessToken": "atk-string",
+          "accessSecret": "ats-string",
           "username": "twitter-username"
         }
       },
@@ -225,7 +217,8 @@ describe('PUT /user-settings/user', function(){
       .set('Accept', 'application/json')
       .send({
         'twitter': {
-          'filter': 'new filter'
+          'filter': 'new filter',
+          'filterIsActive': 'true'
         },
         'pryv': {
           'folderId': 'new folderId'

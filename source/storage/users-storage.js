@@ -11,12 +11,18 @@ var mongoose = require('mongoose'),
 
 mongoose.connect('localhost', 'tg');
 
+// TODO: Handle connection error
 // var db = mongoose.connection;
 // db.on('error', console.error.bind(console, 'connection error:'));
 // db.once('open', function callback () {
 //   console.log('connected to db...');
 // });
 
+
+// 
+// SCHEMA is defined below (mongoose) AND in /schema (JSV)
+// 
+	
 var schema = mongoose.Schema({
 	pryv: {
 		credentials: {
@@ -29,13 +35,11 @@ var schema = mongoose.Schema({
 	twitter: {
 		credentials: {
 			username: String,
-			consumer_key: String,
-			consumer_secret: String,
-			access_token_key: String,
-			access_token_secret: String,
+			accessToken: String,
+			accessSecret: String,
 		},
 		filter: String,
-		filterIsActive: Boolean
+		filterIsActive: String
 	}
 });
 
@@ -77,9 +81,9 @@ exports.readUser = function(conditions, done) {
 };
 
 exports.updateUser = function(conditions, update, done) {
+
 	var env = JSV.createEnvironment();
 	var report = env.validate(update, usersSchema());
-	// console.dir(report.errors);
 	if (report.errors.length !== 0) {
 		return done(400, { 'id': 'invalid-parameters-structure', 'message': 'check the structure of the provided JSON', 'data': report.errors });
 	}
@@ -94,8 +98,10 @@ exports.updateUser = function(conditions, update, done) {
 		    }
 		  }
 		}
-		doc.save();
-		done(undefined, {'ok':'updated'});
+		doc.save(function(err, data){
+			if (err) return console.dir(err);
+			done(undefined, {'ok':'updated', 'data':data});
+		});
 	});
 };
 

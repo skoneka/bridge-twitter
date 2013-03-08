@@ -14,23 +14,21 @@ describe('twitter gateway', function() {
 
   before(function(done){
     user = {
-      "twitter": {
-        "filter": "+Y",
-        "filterIsActive": true,
-        "credentials": {
-          "access_token_key": "atk-string",
-          "access_token_secret": "ats-string",
-          "consumer_key": "ck-string",
-          "consumer_secret": "cs-string",
-          "username": "twitter-user"
+      'twitter': {
+        'filter': '+Y',
+        'filterIsActive': 'true',
+        'credentials': {
+          'accessToken': 'atk-string',
+          'accessSecret': 'ats-string',
+          'username': 'twitter-user'
         }
       },
-      "pryv": {
-        "channelId": "TePRIdMlgf",
-        "folderId": "TPZZHj5YuM",
-        "credentials": {
-          "auth": "auth-string",
-          "username": "pryv-user"
+      'pryv': {
+        'channelId': 'TePRIdMlgf',
+        'folderId': 'TPZZHj5YuM',
+        'credentials': {
+          'auth': 'auth-string',
+          'username': 'pryv-user'
         }
       }
     };

@@ -25,7 +25,7 @@ nconf.defaults({
     name: 'twitter-gateway'
   },
   http: {
-    ip: '127.0.0.1',
+    ip: '176.58.88.91',
     port: 3443
   },
   logs: {
@@ -41,5 +41,9 @@ nconf.defaults({
       maxFileBytes: 4096,
       maxNbFiles: 20
     }
+  },
+  twitter: {
+    consumerKey: 'K03u8c1F76VYi5X9GF0oLQ',
+    consumerSecret: 'x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0'
   }
 });
