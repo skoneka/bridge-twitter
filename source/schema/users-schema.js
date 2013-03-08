@@ -11,25 +11,17 @@ module.exports = function(isRequired) {
 						type: 'string'
 					},
 					'filterIsActive': {
-						type: 'boolean'
+						type: 'string'
 					},
 					'credentials': {
 						type: 'object',
 						required : isRequired === action.CREATE,
 						properties: {
-							'access_token_key': {
+							'accessToken': {
 								type:'string',
 								required : isRequired === action.CREATE
 							},
-							'access_token_secret': {
-								type:'string',
-								required : isRequired === action.CREATE
-							},
-							'consumer_key': {
-								type:'string',
-								required : isRequired === action.CREATE
-							},
-							'consumer_secret': {
+							'accessSecret': {
 								type:'string',
 								required : isRequired === action.CREATE
 							},
@@ -78,3 +70,8 @@ var action = {
   CREATE: 'create'
 };
 Object.freeze(action);
+
+
+// FIXME:
+// remove app token and secret
+// add twitter user id

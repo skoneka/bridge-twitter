@@ -26,13 +26,25 @@
         var requestedPermissions = [
                                     {
                                       "channelId" : "diary",
-                                      "defaultName" : "Diary",
+                                      "defaultName" : "Journal",
                                       "level" : "read",
                                       "folderPermissions" : [
                                         {
-                                          "folderId" : "social-twitter",
+                                          "folderId" : "notes",
                                           "level" : "manage",
-                                          "defaultName" : "Twitter"
+                                          "defaultName" : "Notes"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "channelId" : "position",
+                                      "defaultName" : "Position",
+                                      "level" : "read",
+                                      "folderPermissions" : [
+                                        {
+                                          "folderId" : "iphone",
+                                          "level" : "manage",
+                                          "defaultName" : "iPhone"
                                         }
                                       ]
                                     }
@@ -52,7 +64,6 @@
               console.log("** SUCCESS! username:" + username + 
                           " appToken:" + appToken + 
                           " lang:" + languageCode);
-              window.location = "/beta?appToken="+appToken+"&username="+username;
             },
             refused: function(reason) {
               console.log("** REFUSED! " + reason);
@@ -66,33 +77,3 @@
    
         pryvAccess.setup(settings);
     </script>
-
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand">Bridge: Twitter</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
-              <li class="active"><a>Home</a></li>
-            </ul>
-          </div><!--/.nav-collapse -->
-        </div>
-      </div>
-    </div>
-
-    <div class="container">
-
-      <span id="pryvButton"></span>
-      <h2>Beta testable version of the twitter bridge</h2>
-      you can use perkikiki/poilonez
-    </div>
-
-    <script src="http://code.jquery.com/jquery.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
-  </body>
-</html>

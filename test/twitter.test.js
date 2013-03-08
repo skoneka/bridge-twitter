@@ -1,7 +1,8 @@
 var should = require('should'),
     nock = require('nock'),
     usersStorage = require('../source/storage/users-storage'),
-    twitter = require('../source/lib/twitter');
+    twitter = require('../source/lib/twitter'),
+    nTwitter = require('ntwitter');
 
 
 describe('twitter gateway', function() {
@@ -13,23 +14,21 @@ describe('twitter gateway', function() {
 
   before(function(done){
     user = {
-      "twitter": {
-        "filter": "+Y",
-        "filterIsActive": true,
-        "credentials": {
-          "access_token_key": "atk-string",
-          "access_token_secret": "ats-string",
-          "consumer_key": "ck-string",
-          "consumer_secret": "cs-string",
-          "username": "twitter-user"
+      'twitter': {
+        'filter': '+Y',
+        'filterIsActive': 'true',
+        'credentials': {
+          'accessToken': 'atk-string',
+          'accessSecret': 'ats-string',
+          'username': 'twitter-user'
         }
       },
-      "pryv": {
-        "channelId": "TePRIdMlgf",
-        "folderId": "TPZZHj5YuM",
-        "credentials": {
-          "auth": "auth-string",
-          "username": "pryv-user"
+      'pryv': {
+        'channelId': 'TePRIdMlgf',
+        'folderId': 'TPZZHj5YuM',
+        'credentials': {
+          'auth': 'auth-string',
+          'username': 'pryv-user'
         }
       }
     };
@@ -81,7 +80,12 @@ describe('twitter gateway', function() {
   });
 
   it('should stream incoming tweets', function(done) {
-    // TODO: implement streaming test: 1)create user 2)mock new tweet event 3)verify it is forwared to pryv
+
+    // TODO: implement streaming test: 1)create user 2)mock new tweet event 3)verify it is forwarded to pryv
+
+    // twitter.openedStreams['jonmaim'].updateStatus('tesssssst', function (err, data) {
+    //   done();
+    // });
     done();
   });
   

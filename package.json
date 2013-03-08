@@ -10,7 +10,12 @@
     "winston": "0.6.x",
     "async": "0.1.x",
     "superagent": "0.12.x",
-    "ejs": "*"
+    "ejs": "*",
+    "mongoose": "3.5",
+    "nconf": "*",
+    "JSV": "*",
+    "lodash": "*",
+    "oauth": "*"
   },
   "devDependencies": {
     "blanket": "*",

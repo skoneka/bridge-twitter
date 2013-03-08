@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bridge: Twitter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+      #pryvButton{
+        position:absolute;
+        right:0px;
+        width:130px;
+      }
+    </style>
+    <script type="text/javascript" src="https://sw.rec.la:2443/access/v0/pryv-access-sdk.js"></script>
+  </head>
+  <body>
+
+    <script>
+      /**
+       * process the form and request access
+       */
+        var requestedPermissions = [
+                                    {
+                                      "channelId" : "diary",
+                                      "defaultName" : "Journal",
+                                      "level" : "read",
+                                      "folderPermissions" : [
+                                        {
+                                          "folderId" : "notes",
+                                          "level" : "manage",
+                                          "defaultName" : "Notes"
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "channelId" : "position",
+                                      "defaultName" : "Position",
+                                      "level" : "read",
+                                      "folderPermissions" : [
+                                        {
+                                          "folderId" : "iphone",
+                                          "level" : "manage",
+                                          "defaultName" : "iPhone"
+                                        }
+                                      ]
+                                    }
+                                  ];
+        
+        // ----------------------- //
+        var settings = {
+          requestingAppId : 'test-demo-access',
+          requestedPermissions : requestedPermissions,
+          returnURL : 'auto#', // set this if you don't want a popup
+          spanButtonID : 'pryvButton', // (optional)
+          callbacks : {
+            initialization : function() { },
+            needSignin : function(popupUrl, pollUrl, pollRateMs) { },
+            needValidation : function(popupUrl, pollUrl, pollRateMs) {},
+            accepted : function(username, appToken, languageCode) {
+              console.log("** SUCCESS! username:" + username + 
+                          " appToken:" + appToken + 
+                          " lang:" + languageCode);
+              //window.location = "/beta?appToken="+appToken;+"username="+username;
+            },
+            refused: function(reason) {
+              console.log("** REFUSED! " + reason);
+            },
+            error: function(code, message) {
+              console.log("** ERROR! " + code + " " + message);
+            }
+          }
+        };
+        
+   
+        pryvAccess.setup(settings);
+    </script>
+
+    <script>
+      function submitForm() {
+        $.ajax({type:'PUT', url: '/user-settings/<%=data.username %>', data:{
+          'twitter':{
+            'filter':$("#filter").val(),
+            'filterIsActive':$('#filterIsActive').is(":checked") ? 'true' : 'false'}}, dataType:'json', success: function(response) {
+          console.log($('#prefsForm'));
+          $('#formResult').html('update successful');
+          console.log(response);
+        }});
+        return false;
+      }
+      function forwardTweetsHistory() {
+
+        $.ajax({
+            type: 'GET',
+            url: '/user-timeline/<%=data.username %>'
+        }).done(function(data){
+            $("#importResult").html(Object.keys(data).length+' tweets successfuly imported');
+            console.dir(data);
+        });
+        return false;
+      }
+     </script>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="#">Bridge: Twitter</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="/">Home</a></li>
+              <li class="active"><a>Preferences</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <span id="pryvButton"></span>
+      <h2>Preferences for user <%= data.username %></h2>
+      <br />
+      <span id="pryvButton"></span>
+
+      <form class="well" action="" method="" onsubmit="return submitForm();" id="prefsForm">  
+        <label>PrYv filter</label>  
+        <input id="filter" type="text" class="span3" placeholder="set your filter" value="<%= result.twitter.filter %>">  
+        <span class="help-inline">Tweets with this filter will be forwarded if the filter is active</span>
+        <label class="checkbox">  
+          Activate filter <input id="filterIsActive" type="checkbox" <% if (result.twitter.filterIsActive === 'true') { %>checked<% } %>>
+        </label>
+        <div id="formResult"></div>
+        <button type="submit" class="btn">Submit</button>
+      </form>  
+
+      <form class="well">  
+        <% if (result.twitter.credentials.accessToken === '') { %>
+          You don't seem to have any associated Twitter account.<br /><a href="/auth">Authorize PrYv to access your twitter account</a>
+        <% } else { %>
+          PrYv is connected to your twitter account <b><%= result.twitter.credentials.username %></b>.<br />
+          To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">your twitter settings</a> and reload this page (twice)<br /><br />
+          <button class="btn" type="button" onclick="forwardTweetsHistory()">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
+          <div id="importResult"></div>
+        <% } %>
+      </form>  
+
+    </div>
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

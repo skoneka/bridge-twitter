@@ -162,7 +162,9 @@ Updates user settings
 For example, to update the filter of the user, this json must be provided:
 
     {
-      'twitter.filter': '+Z'
+      'twitter': {
+      	'filter': '+Z'
+      }
     }
 
 ***

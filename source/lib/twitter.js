@@ -1,6 +1,7 @@
 
 var twitter = require('ntwitter'),
     usersStorage = require('../storage/users-storage'),
+    config = require('../utils/config'),
     pryv = require('./pryv');
 
 var openedStreams = {};
@@ -15,22 +16,20 @@ exports.streamTweetsFromExistingUsers = function(users) {
 
 function streamUserTweets (user) {
 
+  if (user.twitter.credentials.accessToken === '') return;
   var currentUsername = user.pryv.credentials.username;
 
   openedStreams[currentUsername] = new twitter({
-    consumer_key: user.twitter.credentials.consumer_key,
-    consumer_secret: user.twitter.credentials.consumer_secret,
-    access_token_key: user.twitter.credentials.access_token_key,
-    access_token_secret: user.twitter.credentials.access_token_secret
+    consumer_key: config.get('twitter:consumerKey'),
+    consumer_secret: config.get('twitter:consumerSecret'),
+    access_token_key: user.twitter.credentials.accessToken,
+    access_token_secret: user.twitter.credentials.accessSecret
   });
-
   openedStreams[currentUsername].stream('user', user.pryv, {track:user.twitter.credentials.username}, function(stream, pryvUserData) {
     stream.on('data', function (data) {
-      if (!data.hasOwnProperty('event')) {
-        pryv.forwardTweet(pryvUserData, data, function(response) {
-          console.log('Tweet successfully stored on Pryv with id ' + response.id);
-        });
-      }
+      pryv.forwardTweet(pryvUserData, data, function(response) {
+        console.log('Tweet successfully stored on Pryv with id ' + response.id);
+      });
     });
     stream.on('end', function (response) {
       // Handle a disconnection
@@ -56,10 +55,10 @@ function getUserTimeline(username, next, done) {
   var user = getUserData(username.toLowerCase(), function(user){
     if (!user) return done('user not found', data);
     var twit = new twitter({
-        consumer_key: user.twitter.credentials.consumer_key,
-        consumer_secret: user.twitter.credentials.consumer_secret,
-        access_token_key: user.twitter.credentials.access_token_key,
-        access_token_secret: user.twitter.credentials.access_token_secret
+      consumer_key: config.get('twitter:consumerKey'),
+      consumer_secret: config.get('twitter:consumerSecret'),
+      access_token_key: user.twitter.credentials.accessToken,
+      access_token_secret: user.twitter.credentials.accessSecret
     });
     search();
 
@@ -94,7 +93,7 @@ function getUserTimeline(username, next, done) {
         if (chunk.length && data.length >= 200) return search(thisId);
 
         // Results must be filtered ?
-        if (user && user.twitter.filterIsActive) {
+        if (user && user.twitter.filterIsActive === 'true') {
           data = filterTweetsFromHistory(data, user.twitter.filter);
         }
         next(user, data, pryv.forwardTweetsHistory, done);
