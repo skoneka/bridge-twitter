@@ -1,5 +1,6 @@
 var https = require('https');
-var request = require('superagent');
+    request = require('superagent'),
+    winston = require('winston');
 
 exports.forwardTweet = function(user, data, done) {
     if (data.event === 'favorite') {
@@ -35,13 +36,10 @@ exports.forwardTweet = function(user, data, done) {
       .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events')
       .set('Authorization', user.credentials.auth)
       .send(tweet)
-      .on('error', function(err) {console.log('connection error');})
+      .on('error', function(err) {winston.error('connection error');})
       .end(function(res){
         if (res.ok) {
           done(res.body);
-        } else {
-          //console.log('error: ' + res.text);
-          //done('error: ' + res.text);
         }
       });
 };
@@ -51,12 +49,9 @@ exports.forwardTweetsHistory = function(user, data, done) {
     .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events/batch')
     .set('Authorization', user.credentials.auth)
     .send(JSON.parse(data))
-    .on('error', function(err) {console.log(err);})
+    .on('error', function(err) {winston.error(err);})
     .end(function(res){
       if (res.ok) {
-        done(undefined, res.body);
-      } else {
-        //console.log('error: ' + res.text);
         done(undefined, res.body);
       }
     });

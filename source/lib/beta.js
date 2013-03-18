@@ -1,6 +1,7 @@
 var usersStorage = require('../storage/users-storage'),
     twitter = require('./twitter'),
 		OAuth= require('oauth').OAuth,
+    winston = require('winston'),
 		oa = new OAuth(
       "https://api.twitter.com/oauth/request_token",
       "https://api.twitter.com/oauth/access_token",
@@ -67,7 +68,7 @@ exports.readPrefs = function(req, res) {
 exports.authorize = function(req, res) {
 	oa.getOAuthRequestToken(function(error, oauth_token, oauth_token_secret, results){
     if (error) {
-      console.log(error);
+      winston.error(error);
       res.send("there was an error :/")
     }
     else {
@@ -87,7 +88,7 @@ exports.callback = function(req, res) {
     oa.getOAuthAccessToken(oauth.token,oauth.token_secret,oauth.verifier, 
     function(error, oauth_access_token, oauth_access_token_secret, results){
       if (error){
-        console.log(error);
+        winston.error(error);
         res.redirect('/prefs');
       } else {
         usersStorage.updateUser({'pryv.credentials.username':req.session.username}, {'twitter':{'credentials':{'accessToken':oauth_access_token,'accessSecret':oauth_access_token_secret,'username':results.screen_name}}}, function(err, result){

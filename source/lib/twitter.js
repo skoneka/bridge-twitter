@@ -2,7 +2,8 @@
 var twitter = require('ntwitter'),
     usersStorage = require('../storage/users-storage'),
     config = require('../utils/config'),
-    pryv = require('./pryv');
+    pryv = require('./pryv'),
+    winston = require('winston');
 
 var openedStreams = {};
 module.exports.openedStreams = openedStreams;
@@ -28,7 +29,7 @@ function streamUserTweets (user) {
   openedStreams[currentUsername].stream('user', user.pryv, {track:user.twitter.credentials.username}, function(stream, pryvUserData) {
     stream.on('data', function (data) {
       pryv.forwardTweet(pryvUserData, data, function(response) {
-        console.log('Tweet successfully stored on Pryv with id ' + response.id);
+        winston.info('Tweet successfully stored on Pryv with id ' + response.id);
       });
     });
     stream.on('end', function (response) {
@@ -38,7 +39,7 @@ function streamUserTweets (user) {
       // Handle a 'silent' disconnection from Twitter, no end/error event fired
     });
     stream.on('error', function(error, code) {
-      console.log('Error: ' + error + ': ' + code);
+      winston.error(error + ': ' + code);
     });
   });
 }
@@ -75,13 +76,12 @@ function getUserTimeline(username, next, done) {
 
       function onTimeline(err, chunk) {
         if (err) {
-          console.log('Twitter search failed: ');
-          console.log(err);
+          winston.error('Twitter search failed: '+ err);
           return done(err);
         }
 
         if (!chunk.length) {
-          console.log('User has not tweeted yet');
+          winston.info('User has not tweeted yet');
           return done(err);
         }
 

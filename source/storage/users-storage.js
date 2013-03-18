@@ -7,16 +7,12 @@ var mongoose = require('mongoose'),
 		util = require('util'),
 		JSV = require('JSV').JSV,
 		usersSchema = require('../schema/users-schema'),
+    	winston = require('winston'),
 		_ = require('lodash');
 
-mongoose.connect('localhost', 'tg');
-
-// TODO: Handle connection error
-// var db = mongoose.connection;
-// db.on('error', console.error.bind(console, 'connection error:'));
-// db.once('open', function callback () {
-//   console.log('connected to db...');
-// });
+mongoose.connect('mongodb://localhost/tg', function(err) {
+	if (err) winston.error(err);
+});
 
 
 // 
