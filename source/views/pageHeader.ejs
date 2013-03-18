@@ -49,6 +49,10 @@
             needSignin : function(popupUrl, pollUrl, pollRateMs) { },
             needValidation : function(popupUrl, pollUrl, pollRateMs) {},
             accepted : function(username, appToken, languageCode) {
+              if (!username && !appToken && !languageCode) {
+                console.log("logged out !");
+                window.location = "/";
+              }
               console.log("** SUCCESS! username:" + username + 
                           " appToken:" + appToken + 
                           " lang:" + languageCode);

@@ -1,5 +1,30 @@
 <% include pageHeader %>
 
+      <script>
+      function forwardTweetsHistory() {
+
+        $.ajax({
+            type: 'GET',
+            url: '/user-timeline/<%=data.username %>'
+        }).done(function(data){
+            $("#importResult").html(Object.keys(data).length+' tweets successfuly imported');
+            console.dir(data);
+        });
+        return false;
+      }
+      function submitForm() {
+        $.ajax({type:'PUT', url: '/user-settings/<%=data.username %>', data:{
+          'twitter':{
+            'filter':$("#filter").val(),
+            'filterIsActive':$('#filterIsActive').is(":checked") ? 'true' : 'false'}}, dataType:'json', success: function(response) {
+          console.log($('#prefsForm'));
+          $('#formResult').html('update successful');
+          console.log(response);
+        }});
+        return false;
+      }
+      </script>
+
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">

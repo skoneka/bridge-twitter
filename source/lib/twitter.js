@@ -110,11 +110,12 @@ function formatUserTimeline(user, data, next, done) {
   var tweetsHistory = [];
 
   for (var i=0; i<len; i++) {
+    console.dir(user);
     var currentTweet = data[i];
     var tweet = {
       time: pryv.toTimestamp(currentTweet.created_at),
       tempRefId: i.toString(),
-      folderId: user.folder_id,
+      folderId: user.pryv.folderId,
       type: {
         class: 'note',
         format: 'twitter'
