@@ -228,7 +228,7 @@ To run the tests, simply execute the makefile:
 The ntwitter library has been slightly modified so it has been left in the node_modules folder.
 
 
-## Licence
+## License
 
 (Revised BSD license.)
 
