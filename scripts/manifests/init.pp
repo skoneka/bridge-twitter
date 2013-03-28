@@ -1,11 +1,11 @@
 # environment should be "staging" or "production"
-class api($environment = 'production') {
+class bridge-twitter($environment = 'production') {
 
-  notify {"API server module in '${environment}'":}
+  notify {"Bridge-twitter server module in '${environment}'":}
 
   # init module vars
 
-  $app = 'api-server'
+  $app = 'bridge-twitter-server'
   $appcode = $app # used by upstart config template, TODO: refactor to just use $app (useless)
   $appunpack = $environment ? { # haven't found how to do string concat to factor out the "livedir" bit
     'staging' => "staging-${app}",
@@ -19,7 +19,7 @@ class api($environment = 'production') {
   $nodeversion = 'v0.8.21'
   $mongodbversion = '2.2.3'
 
-  setup::unpack{'unpack_mechanism_api':
+  setup::unpack{'unpack_mechanism_bridge-twitter':
     livedir => $::livedir,
     app     => $appunpack,
   }
@@ -38,13 +38,13 @@ class api($environment = 'production') {
     ensure  => 'file',
     path    => $configdest,
     mode    => '0644',
-    content => template("api/config.${environment}.json.erb"),
+    content => template("bridge-twitter/config.${environment}.json.erb"),
     require => File[$appdir],
   }
 
   file { 'upstart':
     ensure  => 'file',
-    path    => '/etc/init/api.conf',
+    path    => '/etc/init/bridge-twitter.conf',
     content => template('head/upstart-default-nodeapp-minimal-watch.conf.erb'),
     mode    => '0644',
     require => [Exec['supervisor'], File['app config file']],
