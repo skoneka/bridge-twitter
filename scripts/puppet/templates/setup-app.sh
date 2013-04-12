@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd "<%= appdir %>"
+cd "<%= appdir %>/source"
 npm install --production

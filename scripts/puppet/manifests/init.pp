@@ -1,7 +1,7 @@
 # environment should be "staging" or "production"
 class bridge-twitter($environment = 'production') {
 
-  notify {"Bridge-twitter server module in '${environment}'":}
+  notify {"Bridge-twitter server module in ${environment}":}
 
   # init module vars
 
@@ -34,20 +34,20 @@ class bridge-twitter($environment = 'production') {
     require => File[$::livedir],
   }
 
-  file { 'app config file':
-    ensure  => 'file',
-    path    => $configdest,
-    mode    => '0644',
-    content => template("bridge-twitter/config.${environment}.json.erb"),
-    require => File[$appdir],
-  }
+  #file { 'app config file':
+  #  ensure  => 'file',
+  #  path    => $configdest,
+  #  mode    => '0644',
+  #  content => template("bridge-twitter/config.${environment}.json.erb"),
+  #  require => File[$appdir],
+  #}
 
   file { 'upstart':
     ensure  => 'file',
     path    => '/etc/init/bridge-twitter.conf',
-    content => template('head/upstart-default-nodeapp-minimal-watch.conf.erb'),
+    content => template('head/upstart-default-nodeapp-minimal-watch-no-config.conf.erb'),
     mode    => '0644',
-    require => [Exec['supervisor'], File['app config file']],
+    #require => [Exec['supervisor'], File['app config file']],
+    require => [Exec['supervisor']],
   }
-
 }
