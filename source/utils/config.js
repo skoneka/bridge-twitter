@@ -26,9 +26,7 @@ nconf.defaults({
   },
   http: {
     ip: '92.243.3.203',
-    // ip: '176.58.88.91',
     port: 3443,
-    // domain: 'openhardware.ch'
     domain: 'bridge-twitter-gandi-fr-01.pryv.net'
   },
   logs: {
