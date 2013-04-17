@@ -15,15 +15,58 @@
         width:130px;
       }
     </style>
-    <script type="text/javascript" src="https://sw.rec.la:2443/access/v0/pryv-access-sdk.js"></script>
+    <script type="text/javascript" src="https://sw.rec.la:2443/access/v1/pryv-sdk.js"></script>
   </head>
   <body>
 
     <script>
+      // /**
+      //  * process the form and request access
+      //  */
+      //   var requestedPermissions = [
+      //                               {
+      //                                 "channelId" : "diary",
+      //                                 "defaultName" : "Diary",
+      //                                 "level" : "read",
+      //                                 "folderPermissions" : [
+      //                                   {
+      //                                     "folderId" : "social-twitter",
+      //                                     "level" : "manage",
+      //                                     "defaultName" : "Twitter"
+      //                                   }
+      //                                 ]
+      //                               }
+      //                             ];
+        
+      //   // ----------------------- //
+      //   var settings = {
+      //     requestingAppId : 'test-demo-access',
+      //     requestedPermissions : requestedPermissions,
+      //     returnURL : 'auto#', // set this if you don't want a popup
+      //     spanButtonID : 'pryvButton', // (optional)
+      //     callbacks : {
+      //       initialization : function() { },
+      //       needSignin : function(popupUrl, pollUrl, pollRateMs) { },
+      //       needValidation : function(popupUrl, pollUrl, pollRateMs) {},
+      //       accepted : function(username, appToken, languageCode) {
+      //         console.log("** SUCCESS! username:" + username + 
+      //                     " appToken:" + appToken + 
+      //                     " lang:" + languageCode);
+      //         window.location = "/beta?appToken="+appToken+"&username="+username;
+      //       },
+      //       refused: function(reason) {
+      //         console.log("** REFUSED! " + reason);
+      //       },
+      //       error: function(code, message) {
+      //         console.log("** ERROR! " + code + " " + message);
+      //       }
+      //     }
+      //   };
+
       /**
-       * process the form and request access
-       */
-        var requestedPermissions = [
+      * process the form and request access
+      */
+      var requestedPermissions = [
                                     {
                                       "channelId" : "diary",
                                       "defaultName" : "Diary",
@@ -37,34 +80,33 @@
                                       ]
                                     }
                                   ];
-        
-        // ----------------------- //
-        var settings = {
-          requestingAppId : 'test-demo-access',
-          requestedPermissions : requestedPermissions,
-          returnURL : 'auto#', // set this if you don't want a popup
-          spanButtonID : 'pryvButton', // (optional)
-          callbacks : {
-            initialization : function() { },
-            needSignin : function(popupUrl, pollUrl, pollRateMs) { },
-            needValidation : function(popupUrl, pollUrl, pollRateMs) {},
-            accepted : function(username, appToken, languageCode) {
-              console.log("** SUCCESS! username:" + username + 
-                          " appToken:" + appToken + 
-                          " lang:" + languageCode);
-              window.location = "/beta?appToken="+appToken+"&username="+username;
-            },
-            refused: function(reason) {
-              console.log("** REFUSED! " + reason);
-            },
-            error: function(code, message) {
-              console.log("** ERROR! " + code + " " + message);
-            }
+      
+      // ----------------------- //
+      var settings = {
+        requestingAppId : 'test-demo-access',
+        requestedPermissions : requestedPermissions,
+        returnURL : 'auto#', // set this if you don't want a popup
+        spanButtonID : 'pryvButton', // (optional)
+        callbacks : {
+          initialization : function() { },
+          needSignin : function(popupUrl, pollUrl, pollRateMs) { },
+          needValidation : function(popupUrl, pollUrl, pollRateMs) {},
+          accepted : function(username, appToken, languageCode) {
+            console.log("** SUCCESS! username:" + username + 
+                        " appToken:" + appToken + 
+                        " lang:" + languageCode);
+            window.location = "/beta?appToken="+appToken+"&username="+username;
+          },
+          refused: function(reason) {
+            console.log("** REFUSED! " + reason);
+          },
+          error: function(code, message) {
+            console.log("** ERROR! " + code + " " + message);
           }
-        };
-        
-   
-        pryvAccess.setup(settings);
+        }
+      };
+
+    Pryv.Access.setup(settings);
     </script>
 
     <div class="navbar navbar-inverse navbar-fixed-top">
