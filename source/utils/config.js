@@ -25,7 +25,7 @@ nconf.defaults({
     name: 'twitter-gateway'
   },
   http: {
-    ip: '176.58.88.91',
+    ip: '92.243.3.203',
     port: 3443
   },
   logs: {
