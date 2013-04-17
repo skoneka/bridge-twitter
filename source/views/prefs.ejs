@@ -7,6 +7,7 @@
             type: 'GET',
             url: '/user-timeline/<%=data.username %>'
         }).done(function(data){
+            console.log("done importing");
             $("#importResult").html(Object.keys(data).length+' tweets successfuly imported');
             console.dir(data);
         });

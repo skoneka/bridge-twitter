@@ -12,7 +12,6 @@ var usersStorage = require('../storage/users-storage'),
       "HMAC-SHA1"
     );
 
-
 exports.createUser = function(req, res) {
   if (typeof(req.query.username) !== 'undefined') req.session.username = req.query.username;
   if (typeof(req.query.appToken) !== 'undefined') req.session.appToken = req.query.appToken;

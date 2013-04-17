@@ -82,7 +82,7 @@ function getUserTimeline(username, next, done) {
 
         if (!chunk.length) {
           winston.info('User has not tweeted yet');
-          return done(err);
+          return done(undefined, {});
         }
 
         // Get rid of the first element of each iteration (except for the first iteration)
