@@ -10,7 +10,7 @@ var mongoose = require('mongoose'),
     	winston = require('winston'),
 		_ = require('lodash');
 
-mongoose.connect('mongodb://localhost/tg', function(err) {
+mongoose.connect('mongodb://'+config.get('database:host')+'/'+config.get('database:name'), function(err) {
 	if (err) winston.error(err);
 });
 

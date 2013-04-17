@@ -2,13 +2,14 @@ var usersStorage = require('../storage/users-storage'),
     twitter = require('./twitter'),
 		OAuth= require('oauth').OAuth,
     winston = require('winston'),
+    config = require('../utils/config'),
 		oa = new OAuth(
       "https://api.twitter.com/oauth/request_token",
       "https://api.twitter.com/oauth/access_token",
       "K03u8c1F76VYi5X9GF0oLQ",
       "x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0",
       "1.0a",
-      "http://openhardware.ch:3443/auth/callback",
+      'http://'+config.get('http:domain')+':'+config.get('http:port')+'/auth/callback',
       "HMAC-SHA1"
     );
 
