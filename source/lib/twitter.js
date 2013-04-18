@@ -26,9 +26,9 @@ function streamUserTweets (user) {
     access_token_key: user.twitter.credentials.accessToken,
     access_token_secret: user.twitter.credentials.accessSecret
   });
-  openedStreams[currentUsername].stream('user', user.pryv, {track:user.twitter.credentials.username}, function(stream, pryvUserData) {
+  openedStreams[currentUsername].stream('user', {track:user.twitter.credentials.username}, function(stream) {
     stream.on('data', function (data) {
-      pryv.forwardTweet(pryvUserData, data, function(response) {
+      pryv.forwardTweet(user.pryv, data, function(response) {
         winston.info('Tweet successfully stored on Pryv with id ' + response.id);
       });
     });
@@ -96,6 +96,10 @@ function getUserTimeline(username, next, done) {
         if (user && user.twitter.filterIsActive === 'true') {
           data = filterTweetsFromHistory(data, user.twitter.filter);
         }
+        console.log('received tweets: ');
+        console.dir(data);
+        // end the operations if there are no tweets to forward
+        if (data.length === 0) return done(undefined, '[]');
         next(user, data, pryv.forwardTweetsHistory, done);
       }
     }
@@ -110,7 +114,6 @@ function formatUserTimeline(user, data, next, done) {
   var tweetsHistory = [];
 
   for (var i=0; i<len; i++) {
-    console.dir(user);
     var currentTweet = data[i];
     var tweet = {
       time: pryv.toTimestamp(currentTweet.created_at),
