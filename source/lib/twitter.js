@@ -118,14 +118,10 @@ function formatUserTimeline(user, data, next, done) {
       tempRefId: i.toString(),
       folderId: user.pryv.folderId,
       type: {
-        class: 'note',
+        class: 'message',
         format: 'twitter'
       },
-      value: {
-        id: currentTweet.id_str,   // string ID to handle JS parsing problems
-        text: currentTweet.text,
-        screen_name: currentTweet.user.screen_name
-      }
+      value: currentTweet
     };
     tweetsHistory.push(tweet);
   }

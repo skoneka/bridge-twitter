@@ -11,11 +11,7 @@ exports.forwardTweet = function(user, data, done) {
           class: 'message',
           format: 'twitter'
         },
-        value: {
-          id: data.target_object.id_str,   // string ID to handle JS parsing problems
-          text: data.target_object.text,
-          screen_name: data.target_object.user.screen_name
-        }
+        value: data.target_object
       };
     } else if (data.created_at !== undefined && !data.hasOwnProperty('event')) {
       var tweet = {
@@ -25,11 +21,7 @@ exports.forwardTweet = function(user, data, done) {
           class: 'message',
           format: 'twitter'
         },
-        value: {
-          id: data.id_str,   // string ID to handle JS parsing problems
-          text: data.text,
-          screen_name: data.user.screen_name
-        }
+        value: data
       };
     }
     request
@@ -39,6 +31,7 @@ exports.forwardTweet = function(user, data, done) {
       .on('error', function(err) {winston.error('connection error');})
       .end(function(res){
         if (res.ok) {
+          console.dir(tweet);
           done(res.body);
         }
       });
