@@ -96,8 +96,6 @@ function getUserTimeline(username, next, done) {
         if (user && user.twitter.filterIsActive === 'true') {
           data = filterTweetsFromHistory(data, user.twitter.filter);
         }
-        console.log('received tweets: ');
-        console.dir(data);
         // end the operations if there are no tweets to forward
         if (data.length === 0) return done(undefined, '[]');
         next(user, data, pryv.forwardTweetsHistory, done);
