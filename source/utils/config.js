@@ -21,12 +21,11 @@ nconf.argv()
 nconf.defaults({
   database: {
     host: 'localhost',
-    port: 27017,
     name: 'twitter-gateway'
   },
   http: {
     ip: '92.243.3.203',
-    port: 3443,
+    port: 80,
     domain: 'bridge-twitter-gandi-fr-01.pryv.net'
   },
   logs: {
