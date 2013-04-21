@@ -21,7 +21,7 @@ var should = require('should'),
       }
     },
     formatedData = [{
-      time: 1358181370,
+      time: 1358181371,
       tempRefId: '0',
       folderId: 'TPZZHj5YuM',
       type: {
@@ -35,7 +35,7 @@ var should = require('should'),
       }
     },
     {
-      time: 1358181371,
+      time: 1358181370,
       tempRefId: '1',
       folderId: 'TPZZHj5YuM',
       type: {
@@ -67,7 +67,7 @@ describe('forwardTweet', function(){
     this.timeout(5000);
 
   nock('https://jonmaim.rec.la')
-    .post('/TePRIdMlgf/events {"time":1358181370,"folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}}')
+    .post('/TePRIdMlgf/events {"time":1358181370,"folderId":"TPZZHj5YuM","type":{"class":"message","format":"twitter"},"value":{"created_at":"Mon Jan 14 16:36:10 +0000 2013","id_str":"291588476627976192","text":"this is a test","user":{"screen_name":"testuser"}}}')
     .reply(200, {id: 'VTQkjkyIuM'}, {'Content-Type': 'application/json'});
 
   it('should send an event to the activity server', function(done){
@@ -99,35 +99,45 @@ describe('forwardTweetsHistory', function(){
     };
 
   nock('https://jonmaim.rec.la')
-    .post('/TePRIdMlgf/events/batch [{"time":1358181370,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181371,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
+    .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { '0': { id: 'eTaUhq6IgM' } }, {'Content-Type': 'application/json'});
 
   it('should send a batch of events to the activity server', function(done){
-    pryv.forwardTweetsHistory(pryvUser, JSON.stringify(formatedData), function(err, response){
+    pryv.sendFilteredData(pryvUser, formatedData, function(err, response){
       response.should.have.property('0');
       done();
     });
   })
 
   nock('https://jonmaim.rec.la')
-    .post('/TePRIdMlgf/events/batch [{"time":1358181370,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181371,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
+    .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { id: 'invalid-access-token', message: 'The access token is missing: expected an "Authorization" header or an "auth" query string parameter.' }, {'Content-Type': 'application/json'});
 
   it('should report INVALID_ACCESS_TOKEN response', function(done){
-    pryv.forwardTweetsHistory(pryvUser, JSON.stringify(formatedData), function(err, response){
+    pryv.sendFilteredData(pryvUser, formatedData, function(err, response){
       response.should.have.property('id', 'invalid-access-token')
       done();
     });
   })
 
   nock('https://jonmaim.rec.la')
-    .post('/test/events/batch [{"time":1358181370,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181371,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
+    .post('/test/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { id: 'unknown-channel', message: 'Cannot find channel "test".' }, {'Content-Type': 'application/json'});
 
   it('should report UNKNOWN_CHANNEL response', function(done){
-    pryv.forwardTweetsHistory(pryvUser2, JSON.stringify(formatedData), function(err, response){
+    pryv.sendFilteredData(pryvUser2, formatedData, function(err, response){
       response.should.have.property('id', 'unknown-channel')
       done();
     });
+  })
+
+  it('should avoid forwarding duplicate tweets', function(done){
+    nock('https://jonmaim.rec.la')
+    .get('/TePRIdMlgf/events')
+    .reply(200, [{time:1358181371}], {'Content-Type': 'application/json'});
+    pryv.removeDuplicateEvents(pryvUser, JSON.stringify(formatedData), function(user, dataArray){
+      dataArray.should.have.lengthOf(1);
+      done();
+    })
   })
 })
