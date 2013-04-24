@@ -14,7 +14,7 @@ module.exports = nconf;
 //   3. A file located at 'path/to/config.json'
 nconf.argv()
      .env()
-     .file({ file: 'config.json' }); //TODO: set proper config file path
+     .file({ file: './source/utils/config.json' }); //TODO: set proper config file path
 
 // Set default values
 
@@ -43,7 +43,7 @@ nconf.defaults({
     }
   },
   twitter: {
-    consumerKey: 'K03u8c1F76VYi5X9GF0oLQ',
-    consumerSecret: 'x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0'
+    consumerKey: '',
+    consumerSecret: ''
   }
 });
