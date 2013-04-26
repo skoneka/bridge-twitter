@@ -4,7 +4,7 @@ var app = require('./app'),
     winston = require('winston');
 
 
-var certsPathAndKey = config.get(key+':certsPathAndKey');
+var certsPathAndKey = config.get('http:certsPathAndKey');
 var serverOptions = {
   key: fs.readFileSync(certsPathAndKey+'-key.pem').toString(),
   cert: fs.readFileSync(certsPathAndKey+'-cert.crt').toString(),

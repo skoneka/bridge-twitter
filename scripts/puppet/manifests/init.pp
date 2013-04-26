@@ -1,5 +1,5 @@
 # environment should be "staging" or "production"
-class bridge-twitter($httport,$twitterKey,$twitterSecret) {
+class bridge-twitter($httpport,$twitterKey,$twitterSecret) {
 
   $environment = $pryv::environment
   notify {"Bridge-twitter server module in ${environment}":}
@@ -7,6 +7,7 @@ class bridge-twitter($httport,$twitterKey,$twitterSecret) {
   # init module vars
 
   $app = 'bridge-twitter-server'
+  $appcode = $app
   $appdir = "${pryv::livedir}/${app}"
   $filesdir = "${pryv::datadir}/${app}-files"
   $logsdir = $pryv::logsdir
@@ -14,6 +15,7 @@ class bridge-twitter($httport,$twitterKey,$twitterSecret) {
 
   $nodeversion = 'v0.8.21'
   $mongodbversion = '2.2.3'
+
 
 
   setup::unpack{'unpack_mechanism_bridge-twitter':
@@ -46,7 +48,7 @@ class bridge-twitter($httport,$twitterKey,$twitterSecret) {
     path    =>  $configdest,
     ensure  => 'file',
     mode    => '0644',
-    content  => template("swww/config.erb"),
+    content  => template("bridge-twitter/config.erb"),
     require => File["${pryv::livedir}"],
   }
 
