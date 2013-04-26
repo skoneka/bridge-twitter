@@ -63,7 +63,7 @@ class bridge-twitter($httpport,$twitterKey,$twitterSecret) {
   file { 'upstart':
     ensure  => 'file',
     path    => '/etc/init/bridge-twitter.conf',
-    content => template('head/upstart-default-nodeapp-minimal-watch-no-config.conf.erb'),
+    content => template('head/upstart-default-nodeapp-minimal-watch.conf.erb'),
     mode    => '0644',
     require => Exec['supervisor'],
   }
