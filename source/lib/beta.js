@@ -9,7 +9,7 @@ var usersStorage = require('../storage/users-storage'),
       'K03u8c1F76VYi5X9GF0oLQ',
       'x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0',
       '1.0a',
-      'https://'+config.get('http:domain')+':'+config.get('http:port')+'/auth/callback',
+      config.get('twitter:callbackBaseURL')+'/auth/callback',
       'HMAC-SHA1'
     );
 

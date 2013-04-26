@@ -1,38 +1,55 @@
 # environment should be "staging" or "production"
-class bridge-twitter($environment = 'production') {
+class bridge-twitter($httport,$twitterKey,$twitterSecret) {
 
+  $environment = $pryv::environment
   notify {"Bridge-twitter server module in ${environment}":}
 
   # init module vars
 
   $app = 'bridge-twitter-server'
-  $appcode = $app # used by upstart config template, TODO: refactor to just use $app (useless)
-  $appunpack = $environment ? { # haven't found how to do string concat to factor out the "livedir" bit
-    'staging' => "staging-${app}",
-    default => "$app",
-  }
-  $appdir = "${::livedir}/${appunpack}"
-  $filesdir = "${::datadir}/${app}-files"
-  $logsdir = $::logsdir
+  $appdir = "${pryv::livedir}/${app}"
+  $filesdir = "${pryv::datadir}/${app}-files"
+  $logsdir = $pryv::logsdir
   $configdest = "${appdir}.config.json"
 
   $nodeversion = 'v0.8.21'
   $mongodbversion = '2.2.3'
 
+
   setup::unpack{'unpack_mechanism_bridge-twitter':
-    livedir => $::livedir,
-    app     => $appunpack,
+    livedir => $pryv::livedir,
+    app     => $app,
   }
 
   # dependencies
   class {'nodesetup': nodeversion => $nodeversion}
   class {'mongodb': mongodbversion => $mongodbversion}
 
+
+  if ($environment == "staging") {
+     secret::ssl{"rec.la": }
+     $httpcerts = "${pryv::livedir}/secret/rec.la"
+     $staging = true
+  } else {
+     secret::ssl{"pryv.io": }
+     $httpcerts = "${pryv::livedir}/secret/pryv.io"
+     $staging = false
+  }
+
   file { $appdir:
     ensure  => 'directory',
     mode    => '0644',
-    require => File[$::livedir],
+    require => File[$pryv::livedir],
   }
+
+  file {"bridge twitter config file":
+    path    =>  $configdest,
+    ensure  => 'file',
+    mode    => '0644',
+    content  => template("swww/config.erb"),
+    require => File["${pryv::livedir}"],
+  }
+
   file {"bridge-twitter setup script":
     path    =>  "$appdir.setup.bash",
     ensure  => 'file',

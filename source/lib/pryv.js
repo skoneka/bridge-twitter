@@ -1,6 +1,9 @@
 var https = require('https');
     request = require('superagent'),
-    winston = require('winston');
+    winston = require('winston'),
+     config = require('../utils/config');
+
+var domain = config.get('pryvdomain');
 
 exports.forwardTweet = function(user, data, done) {
     if (data.event === 'favorite') {
