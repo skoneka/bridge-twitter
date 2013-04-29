@@ -6,8 +6,8 @@ var usersStorage = require('../storage/users-storage'),
 		oa = new OAuth(
       'https://api.twitter.com/oauth/request_token',
       'https://api.twitter.com/oauth/access_token',
-      'K03u8c1F76VYi5X9GF0oLQ',
-      'x89NwVNcqFqtlzvykgdXIHUA7XdGqGOk661JLZQ0',
+      config.get('twitter:consumerKey'),
+      config.get('twitter:consumerSecret'),
       '1.0a',
       config.get('twitter:callbackBaseURL')+'/auth/callback',
       'HMAC-SHA1'
