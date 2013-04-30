@@ -9,17 +9,18 @@ exports.forwardTweet = function(user, data, done) {
     if (data.event === 'favorite') {
       var tweet = {
         time: toTimestamp(data.created_at),
-        folderId: user.folderId,
+        folderId: user.pryv.folderId,
         type: {
           class: 'message',
           format: 'twitter'
         },
         value: data.target_object
       };
-    } else if (data.created_at !== undefined && !data.hasOwnProperty('event')) {
+    } else if (data.created_at !== undefined && !data.hasOwnProperty('event') && user.twitter.filterOption !== 'favorite') {
+      if ((user.twitter.filterOption === 'filter' && data.text.indexOf(user.twitter.filter) !== -1) || user.twitter.filterOption === 'all')
       var tweet = {
         time: toTimestamp(data.created_at),
-        folderId: user.folderId,
+        folderId: user.pryv.folderId,
         type: {
           class: 'message',
           format: 'twitter'
@@ -28,8 +29,8 @@ exports.forwardTweet = function(user, data, done) {
       };
     }
     request
-      .post('https://' + user.credentials.username + '.rec.la:443/' + user.channelId + '/events')
-      .set('Authorization', user.credentials.auth)
+      .post('https://' + user.pryv.credentials.username + '.rec.la:443/' + user.pryv.channelId + '/events')
+      .set('Authorization', user.pryv.credentials.auth)
       .send(tweet)
       .on('error', function(err) {winston.error('connection error');})
       .end(function(res){

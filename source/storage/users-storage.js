@@ -35,7 +35,7 @@ var schema = mongoose.Schema({
 			accessSecret: String,
 		},
 		filter: String,
-		filterIsActive: String
+		filterOption: String
 	}
 });
 

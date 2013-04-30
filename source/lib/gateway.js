@@ -46,6 +46,9 @@ exports.updateUser = function(req, res) {
       res.statusCode = err;
       return res.send({id:'invalid-parameters-structure'});
     }
+    twitter.openedStreams[username].streamRef.destroy();
+    delete twitter.openedStreams[username];
+    twitter.streamUserTweets(result.data);
     res.send(result);
   });
 };

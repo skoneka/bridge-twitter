@@ -17,8 +17,8 @@
         $.ajax({type:'PUT', url: '/user-settings/<%=data.username %>', data:{
           'twitter':{
             'filter':$("#filter").val(),
-            'filterIsActive':$('#filterIsActive').is(":checked") ? 'true' : 'false'}}, dataType:'json', success: function(response) {
-          console.log($('#prefsForm'));
+            'filterOption':$('#filterOption').val()}}, dataType:'json', success: function(response) {
+          console.log($('#filterOption').val());
           $('#formResult').html('update successful');
           console.log(response);
         }});
@@ -56,8 +56,13 @@
         <label>PrYv filter</label>  
         <input id="filter" type="text" class="span3" placeholder="set your filter" value="<%= result.twitter.filter %>">  
         <span class="help-inline">Tweets with this filter will be forwarded if the filter is active</span>
-        <label class="checkbox">  
-          Activate filter <input id="filterIsActive" type="checkbox" <% if (result.twitter.filterIsActive === 'true') { %>checked<% } %>>
+        <label class="select">  
+          Which tweets are forwarded to PrYv ?<br />
+          <select id="filterOption">
+            <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All of them</option>
+            <option value="filter" <% if (result.twitter.filterOption === 'filter') { %>selected<% } %>>Only the one matching my filter</option>
+            <option value="favorite" <% if (result.twitter.filterOption === 'favorite') { %>selected<% } %>>Only the one I favorite</option>
+          </select>
         </label>
         <div id="formResult"></div>
         <button type="submit" class="btn">Submit</button>

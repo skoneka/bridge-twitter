@@ -10,7 +10,7 @@ module.exports = function(isRequired) {
 					'filter': {
 						type: 'string'
 					},
-					'filterIsActive': {
+					'filterOption': {
 						type: 'string'
 					},
 					'credentials': {

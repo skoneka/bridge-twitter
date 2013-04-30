@@ -27,8 +27,9 @@ function streamUserTweets (user) {
     access_token_secret: user.twitter.credentials.accessSecret
   });
   openedStreams[currentUsername].stream('user', {track:user.twitter.credentials.username}, function(stream) {
+    openedStreams[currentUsername].streamRef = stream;
     stream.on('data', function (data) {
-      pryv.forwardTweet(user.pryv, data, function(response) {
+      pryv.forwardTweet(user, data, function(response) {
         winston.info('Tweet successfully stored on Pryv with id ' + response.id);
       });
     });
@@ -81,8 +82,8 @@ function getUserTimeline(username, next, done) {
         }
 
         if (!chunk.length) {
-          winston.info('User has not tweeted yet');
-          return done(undefined, {});
+          //User has not tweeted yet
+          return done(undefined, '[]');
         }
 
         // Get rid of the first element of each iteration (except for the first iteration)
@@ -92,11 +93,19 @@ function getUserTimeline(username, next, done) {
         var thisId = parseInt(data[data.length - 1].id_str, 10);
         if (chunk.length && data.length >= 200) return search(thisId);
 
+        console.dir(data);
+
         // Results must be filtered ?
-        if (user && user.twitter.filterIsActive === 'true') {
+        if (user && user.twitter.filterOption === 'filter') {
           data = filterTweetsFromHistory(data, user.twitter.filter);
         }
-        // end the operations if there are no tweets to forward
+
+        // Only import favorited tweets ?
+        if (user && user.twitter.filterOption === 'favorite') {
+          data = selectFavsFromHistory(data);
+        }
+
+        // end the operations if there are no tweets left to forward
         if (data.length === 0) return done(undefined, '[]');
         next(user, data, pryv.forwardTweetsHistory, done);
       }
@@ -131,6 +140,20 @@ function formatUserTimeline(user, data, next, done) {
 module.exports.formatUserTimeline = formatUserTimeline;
 
 function filterTweetsFromHistory(collection, query){
+    var len = collection.length;
+    var newCollection = [];
+    
+    for(var i=0; i<len; i++){
+        var item = collection[i];
+
+        if(item.text.indexOf(query) !== -1) {
+          newCollection.push(item);
+        }
+    }
+    return newCollection;
+}
+
+function selectFavsFromHistory(collection, query){
     var len = collection.length;
     var newCollection = [];
     
