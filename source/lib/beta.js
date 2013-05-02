@@ -2,6 +2,7 @@ var usersStorage = require('../storage/users-storage'),
     twitter = require('./twitter'),
 		OAuth= require('oauth').OAuth,
     winston = require('winston'),
+    async = require('async'),
     config = require('../utils/config'),
 		oa = new OAuth(
       'https://api.twitter.com/oauth/request_token',
@@ -23,11 +24,11 @@ exports.createUser = function(req, res) {
         'twitter': {
           'filter': '+Y',
           'filterOption': '',
-          'credentials': {
+          'credentials': [{
             'accessToken': '',
             'accessSecret': '',
             'username': ''
-          }
+          }]
         },
         'pryv': {
           'channelId': 'diary',
@@ -55,27 +56,90 @@ exports.createUser = function(req, res) {
   });
 };
 
+/*
+ * Pourquoi le callback final du async est executé avant le reste ???
+ */
+// exports.readPrefs = function(req, res) {
+//   usersStorage.readUser({'pryv.credentials.username':req.session.username}, function(result){
+//     if (!result) { return res.redirect('/');}
+
+//     var toBeDeleted = [];
+//     async.forEach(result.twitter.credentials, function(credential, cb) {
+//       if (credential.accessToken !== '') {
+//         twitter.openedStreams[credential.username].verifyCredentials(function(err){
+//           if (err) {
+//             console.log(credential.username+" should be deleted");
+//             toBeDeleted.push(credential.username);
+//             console.dir(toBeDeleted);
+//           }
+//         });
+//       }
+//       cb();
+//     }, function(err) {
+//       if (err) console.log("error !!");
+//       console.log("youpie");
+//       for(var i=0; i<toBeDeleted.length; i++) {
+//         var condition = {'pryv.credentials.username':req.session.username};
+//         usersStorage.deleteUserTwitterAccount(condition, toBeDeleted[i]);          
+//       }
+//       res.render('prefs', {data: req.session, result: result});
+//     });
+//   });
+// };
+
 exports.readPrefs = function(req, res) {
   usersStorage.readUser({'pryv.credentials.username':req.session.username}, function(result){
     if (!result) { return res.redirect('/');}
-    if (!twitter.openedStreams.hasOwnProperty(req.session.username)) {
-      return res.render('prefs', {data: req.session, result: result});
-    }
-    twitter.openedStreams[req.session.username].verifyCredentials(function(err){
-      if (err) {
-        var condition = {'pryv.credentials.username':req.session.username};
-        var update = {'twitter':{'credentials':{
-          'accessToken':'',
-          'accessSecret':''
-        }}};
-        usersStorage.updateUser(condition, update, function(err, result){
-          return res.render('prefs', {data: req.session, result: result.data});
+    var instanceNum = 0;
+    result.twitter.credentials.forEach(function(credential){
+      if (credential.accessToken !== '') {
+        ++instanceNum;
+        console.dir(credential);
+        twitter.openedStreams[credential.username].verifyCredentials(function(err){
+          --instanceNum;
+          if (err) {
+            var condition = {'pryv.credentials.username':req.session.username};
+            usersStorage.deleteUserTwitterAccount(condition, credential.username);
+          }
         });
       }
-      res.render('prefs', {data: req.session, result: result});
     });
+    res.render('prefs', {data: req.session, result: result});
   });
 };
+
+// function checkTwitterAccount(){
+
+// }
+
+// exports.readPrefs = function(req, res) {
+//   usersStorage.readUser({'pryv.credentials.username':req.session.username}, function(result){
+//     if (!result) { return res.redirect('/');}
+//     var toBeDeleted = [];
+//     var instanceNum = 0;
+//     for (var i=0; i<result.twitter.credentials.length; i++) {
+//       if (result.twitter.credentials[i].accessToken === '') continue;
+//       ++instanceNum;
+//       var currentTwitterUsername = result.twitter.credentials[i].username;
+
+//       console.log("checking user "+currentTwitterUsername);
+//       twitter.openedStreams[currentTwitterUsername].verifyCredentials(function(err){
+//         --instanceNum;
+//         if (err) {
+//           toBeDeleted.push(currentTwitterUsername);
+//           console.dir(toBeDeleted+" must be terminated");
+//         }
+//         if (instanceNum === 0) {
+//           for(var i=0; i<toBeDeleted.length; i++) {
+//             var condition = {'pryv.credentials.username':req.session.username};
+//             usersStorage.deleteUserTwitterAccount(condition, toBeDeleted[i]);          
+//           }
+//         }
+//       });
+//     }
+//     res.render('prefs', {data: req.session, result: result});
+//   });
+// };
 
 exports.authorize = function(req, res) {
   oa.getOAuthRequestToken(function(error, oauth_token, oauth_token_secret){
@@ -104,12 +168,13 @@ exports.callback = function(req, res) {
         res.redirect('/prefs');
       } else {
         var condition = {'pryv.credentials.username':req.session.username};
-        var update = {'twitter':{'credentials':{
+        var update = {
           'accessToken':oauth_access_token,
           'accessSecret':oauth_access_token_secret,
           'username':results.screen_name
-        }}};
-        usersStorage.updateUser(condition, update, function(err, result){
+        };
+        usersStorage.updateUserTwitterAccount(condition, update, function(err, result){
+          console.dir(result.data);
           twitter.streamUserTweets(result.data);
           res.redirect('/prefs');
         });

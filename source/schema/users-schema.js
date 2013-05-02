@@ -1,7 +1,6 @@
 module.exports = function(isRequired) {
 	var schema = {
 		type : 'object',
-		additionalProperties : false,
 		properties : {
 			'twitter': {
 				type: 'object',
@@ -14,20 +13,23 @@ module.exports = function(isRequired) {
 						type: 'string'
 					},
 					'credentials': {
-						type: 'object',
+						type: 'array',
 						required : isRequired === action.CREATE,
-						properties: {
-							'accessToken': {
-								type:'string',
-								required : isRequired === action.CREATE
-							},
-							'accessSecret': {
-								type:'string',
-								required : isRequired === action.CREATE
-							},
-							'username': {
-								type:'string',
-								required : isRequired === action.CREATE
+						items: {
+							type : 'object',
+							properties : {
+								'accessToken': {
+									type:'string',
+									required : isRequired === action.CREATE
+								},
+								'accessSecret': {
+									type:'string',
+									required : isRequired === action.CREATE
+								},
+								'username': {
+									type:'string',
+									required : isRequired === action.CREATE
+								}
 							}
 						}
 					}

@@ -17,56 +17,77 @@ exports.streamTweetsFromExistingUsers = function(users) {
 
 function streamUserTweets (user) {
 
-  if (user.twitter.credentials.accessToken === '') return;
-  var currentUsername = user.pryv.credentials.username;
+  for (var i=0; i<user.twitter.credentials.length; i++) {
+    if (user.twitter.credentials[i].accessToken === '') continue;
+    var currentTwitterUsername = user.twitter.credentials[i].username;
 
-  openedStreams[currentUsername] = new twitter({
-    consumer_key: config.get('twitter:consumerKey'),
-    consumer_secret: config.get('twitter:consumerSecret'),
-    access_token_key: user.twitter.credentials.accessToken,
-    access_token_secret: user.twitter.credentials.accessSecret
-  });
-  openedStreams[currentUsername].stream('user', {track:user.twitter.credentials.username}, function(stream) {
-    openedStreams[currentUsername].streamRef = stream;
-    stream.on('data', function (data) {
-      pryv.forwardTweet(user, data, function(response) {
-        winston.info('Tweet successfully stored on Pryv with id ' + response.id);
+    //if the stream was already opened, kill it and remove its reference
+    if (typeof openedStreams[currentTwitterUsername] !== 'undefined') {
+      console.dir(openedStreams[currentTwitterUsername]);
+      openedStreams[currentTwitterUsername].streamRef.destroy();
+      delete openedStreams[currentTwitterUsername];
+    }
+
+    openedStreams[currentTwitterUsername] = new twitter({
+      consumer_key: config.get('twitter:consumerKey'),
+      consumer_secret: config.get('twitter:consumerSecret'),
+      access_token_key: user.twitter.credentials[i].accessToken,
+      access_token_secret: user.twitter.credentials[i].accessSecret
+    });
+    openedStreams[currentTwitterUsername].stream('user', {track:user.twitter.credentials[i].username}, function(stream) {
+      openedStreams[currentTwitterUsername].streamRef = stream;
+      stream.on('data', function (data) {
+        pryv.forwardTweet(user, data, function(response) {
+          winston.info('Tweet successfully stored on Pryv with id ' + response.id);
+        });
+      });
+      stream.on('end', function (response) {
+        // Handle a disconnection
+      });
+      stream.on('destroy', function (response) {
+        // Handle a 'silent' disconnection from Twitter, no end/error event fired
+      });
+      stream.on('error', function(error, code) {
+        winston.error(error + ': ' + code);
       });
     });
-    stream.on('end', function (response) {
-      // Handle a disconnection
-    });
-    stream.on('destroy', function (response) {
-      // Handle a 'silent' disconnection from Twitter, no end/error event fired
-    });
-    stream.on('error', function(error, code) {
-      winston.error(error + ': ' + code);
-    });
-  });
+  }
 }
 module.exports.streamUserTweets = streamUserTweets;
 
-exports.transferUserTimeline = function(username, done) {
+exports.transferUserTimeline = function(username, account, done) {
 
-  getUserTimeline(username, formatUserTimeline, done);
+  getUserTimeline(username, account, formatUserTimeline, done);
 };
 
-function getUserTimeline(username, next, done) {
+function getUserTimeline(username, account, next, done) {
 
   var data = [];
   var user = getUserData(username.toLowerCase(), function(user){
     if (!user) return done('user not found', data);
+    console.dir(user.twitter.credentials);
+    var credentials = {};
+    for (var i=0; i<user.twitter.credentials.length; i++) {
+      var currentCredentials = user.twitter.credentials[i];
+      console.log("matching "+currentCredentials.username+" with "+account);
+      if (currentCredentials.accessToken === '') continue;
+      if (currentCredentials.username.toLowerCase() === account.toLowerCase()) {
+        credentials = currentCredentials;
+        console.log("ok");
+        break;
+      }
+    }
     var twit = new twitter({
       consumer_key: config.get('twitter:consumerKey'),
       consumer_secret: config.get('twitter:consumerSecret'),
-      access_token_key: user.twitter.credentials.accessToken,
-      access_token_secret: user.twitter.credentials.accessSecret
+      access_token_key: credentials.accessToken,
+      access_token_secret: credentials.accessSecret
     });
     search();
 
     function search(lastId) {
       var args = {
-        screen_name: user.twitter.credentials.username,
+        screen_name: credentials.username,
         count: 200,
         include_rts: 1
       };

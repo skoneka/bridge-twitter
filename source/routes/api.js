@@ -15,6 +15,6 @@ function api(app) {
 	app.delete('/user-settings', gateway.deleteUser);
 	app.put('/user-settings/:username', gateway.updateUser);
 	app.get('/user-settings-schema', gateway.readSchema);
-	app.get('/user-timeline/:username', gateway.transferUserTimeline);
+	app.get('/user-timeline/:username/:account', gateway.transferUserTimeline);
 	app.get('/users', gateway.listUsers); //for testing purposes
 }

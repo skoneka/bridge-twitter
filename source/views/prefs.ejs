@@ -1,14 +1,14 @@
 <% include header %>
 
       <script>
-      function forwardTweetsHistory() {
+      function forwardTweetsHistory(account) {
 
         $.ajax({
             type: 'GET',
-            url: '/user-timeline/<%=data.username %>'
+            url: '/user-timeline/<%=data.username %>/'+account
         }).done(function(data){
             console.log("done importing");
-            $("#importResult").html(Object.keys(data).length+' tweets successfuly imported');
+            $("#"+account).html(Object.keys(data).length+' tweets successfuly imported');
             console.dir(data);
         });
         return false;
@@ -68,16 +68,17 @@
         <button type="submit" class="btn">Submit</button>
       </form>  
 
+      <% result.twitter.credentials.forEach(function(credential){
+        if (credential.accessToken !== '') {%>
       <form class="well">  
-        <% if (result.twitter.credentials.accessToken === '') { %>
-          You don't seem to have any associated Twitter account.<br /><a href="/auth">Authorize PrYv to access your twitter account</a>
-        <% } else { %>
-          PrYv is connected to your twitter account <b><%= result.twitter.credentials.username %></b>.<br />
-          To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">your twitter settings</a> and reload this page (twice)<br /><br />
-          <button class="btn" type="button" onclick="forwardTweetsHistory()">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
-          <div id="importResult"></div>
-        <% } %>
-      </form>  
+        PrYv is connected to the twitter account <b><%= credential.username %></b>. New tweets will automatically be forwarded to PrYv based on your preferences.
+        <br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
+        <div id="<%= credential.username %>"></div>
+      </form> 
+      <% }}) %>
+
+      <p><a href="/auth">Add a new twitter account</a></p>
+      <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the twitter settings</a> of your corresponding account.</p><br />
 
     </div>
     <script src="/js/jquery.js"></script>
