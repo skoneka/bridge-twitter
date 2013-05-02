@@ -23,7 +23,6 @@ function streamUserTweets (user) {
 
     //if the stream was already opened, kill it and remove its reference
     if (typeof openedStreams[currentTwitterUsername] !== 'undefined') {
-      console.dir(openedStreams[currentTwitterUsername]);
       openedStreams[currentTwitterUsername].streamRef.destroy();
       delete openedStreams[currentTwitterUsername];
     }
@@ -65,15 +64,12 @@ function getUserTimeline(username, account, next, done) {
   var data = [];
   var user = getUserData(username.toLowerCase(), function(user){
     if (!user) return done('user not found', data);
-    console.dir(user.twitter.credentials);
     var credentials = {};
     for (var i=0; i<user.twitter.credentials.length; i++) {
       var currentCredentials = user.twitter.credentials[i];
-      console.log("matching "+currentCredentials.username+" with "+account);
       if (currentCredentials.accessToken === '') continue;
       if (currentCredentials.username.toLowerCase() === account.toLowerCase()) {
         credentials = currentCredentials;
-        console.log("ok");
         break;
       }
     }
@@ -113,8 +109,6 @@ function getUserTimeline(username, account, next, done) {
         data = data.concat(chunk);
         var thisId = parseInt(data[data.length - 1].id_str, 10);
         if (chunk.length && data.length >= 200) return search(thisId);
-
-        console.dir(data);
 
         // Results must be filtered ?
         if (user && user.twitter.filterOption === 'filter') {

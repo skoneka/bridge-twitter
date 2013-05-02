@@ -95,7 +95,7 @@ exports.updateUser = function(conditions, update, done) {
       }
     }
     doc.save(function(err, data){
-      if (err) return console.dir(err);
+      if (err) return winston.error(err);
       done(undefined, {'ok':'updated', 'data':data});
     });
   });
