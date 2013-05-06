@@ -1,6 +1,7 @@
 module.exports = function(isRequired) {
 	var schema = {
 		type : 'object',
+		additionalProperties : false,
 		properties : {
 			'twitter': {
 				type: 'object',
@@ -14,9 +15,10 @@ module.exports = function(isRequired) {
 					},
 					'credentials': {
 						type: 'array',
-						required : isRequired === action.CREATE,
-						items: {
+						items: [{
 							type : 'object',
+					    	minItems : 0,
+							maxItems : 10,
 							properties : {
 								'accessToken': {
 									type:'string',
@@ -31,7 +33,7 @@ module.exports = function(isRequired) {
 									required : isRequired === action.CREATE
 								}
 							}
-						}
+						}]
 					}
 				}
 			},
@@ -64,16 +66,11 @@ module.exports = function(isRequired) {
 				}
 			}
 		}
-	}
+	};
 	return schema;
-}
+};
 
 var action = {
   CREATE: 'create'
 };
 Object.freeze(action);
-
-
-// FIXME:
-// remove app token and secret
-// add twitter user id

@@ -12,7 +12,7 @@ var serverOptions = {
 };
 
 
-server = require('https').createServer(serverOptions, app),
+var server = require('https').createServer(serverOptions, app);
 server.listen(config.get('http:port'), config.get('http:ip'), function() {
   var address = server.address();
   var protocol = server.key ? 'https' : 'http';

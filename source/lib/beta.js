@@ -2,7 +2,6 @@ var usersStorage = require('../storage/users-storage'),
     twitter = require('./twitter'),
 		OAuth= require('oauth').OAuth,
     winston = require('winston'),
-    async = require('async'),
     config = require('../utils/config'),
 		oa = new OAuth(
       'https://api.twitter.com/oauth/request_token',
@@ -67,7 +66,9 @@ exports.readPrefs = function(req, res) {
           --instanceNum;
           if (err) {
             var condition = {'pryv.credentials.username':req.session.username};
-            usersStorage.deleteUserTwitterAccount(condition, credential.username);
+            usersStorage.deleteUserTwitterAccount(condition, credential.username, function(err){
+              if (err) { winston.error(err); }
+            });
           }
         });
       }

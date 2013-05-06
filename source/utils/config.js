@@ -3,8 +3,8 @@
  */
 
 var nconf = require('nconf'),
-  logger = require('winston')
-  fs = require('fs');
+    logger = require('winston'),
+    fs = require('fs');
 
 module.exports = nconf;
 

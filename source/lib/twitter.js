@@ -18,7 +18,7 @@ exports.streamTweetsFromExistingUsers = function(users) {
 function streamUserTweets (user) {
 
   for (var i=0; i<user.twitter.credentials.length; i++) {
-    if (user.twitter.credentials[i].accessToken === '') continue;
+    if (user.twitter.credentials[i].accessToken === '') { continue; }
     var currentTwitterUsername = user.twitter.credentials[i].username;
 
     //if the stream was already opened, kill it and remove its reference
@@ -33,18 +33,13 @@ function streamUserTweets (user) {
       access_token_key: user.twitter.credentials[i].accessToken,
       access_token_secret: user.twitter.credentials[i].accessSecret
     });
-    openedStreams[currentTwitterUsername].stream('user', {track:user.twitter.credentials[i].username}, function(stream) {
+    var condition = {track:user.twitter.credentials[i].username};
+    openedStreams[currentTwitterUsername].stream('user', condition, function(stream) {
       openedStreams[currentTwitterUsername].streamRef = stream;
       stream.on('data', function (data) {
         pryv.forwardTweet(user, data, function(response) {
           winston.info('Tweet successfully stored on Pryv with id ' + response.id);
         });
-      });
-      stream.on('end', function (response) {
-        // Handle a disconnection
-      });
-      stream.on('destroy', function (response) {
-        // Handle a 'silent' disconnection from Twitter, no end/error event fired
       });
       stream.on('error', function(error, code) {
         winston.error(error + ': ' + code);
@@ -62,12 +57,12 @@ exports.transferUserTimeline = function(username, account, done) {
 function getUserTimeline(username, account, next, done) {
 
   var data = [];
-  var user = getUserData(username.toLowerCase(), function(user){
-    if (!user) return done('user not found', data);
+  getUserData(username.toLowerCase(), function(user){
+    if (!user) { return done('user not found', data); }
     var credentials = {};
     for (var i=0; i<user.twitter.credentials.length; i++) {
       var currentCredentials = user.twitter.credentials[i];
-      if (currentCredentials.accessToken === '') continue;
+      if (currentCredentials.accessToken === '') { continue; }
       if (currentCredentials.username.toLowerCase() === account.toLowerCase()) {
         credentials = currentCredentials;
         break;
@@ -88,7 +83,7 @@ function getUserTimeline(username, account, next, done) {
         include_rts: 1
       };
       // Do not include this property on the first iteration
-      if(lastId) args.max_id = lastId;
+      if(lastId) { args.max_id = lastId; }
 
       twit.getUserTimeline(args, onTimeline);
 
@@ -100,15 +95,15 @@ function getUserTimeline(username, account, next, done) {
 
         if (!chunk.length) {
           //User has not tweeted yet
-          return done(undefined, '[]');
+          return done(undefined, {});
         }
 
         // Get rid of the first element of each iteration (except for the first iteration)
-        if (data.length) chunk.shift();
+        if (data.length) { chunk.shift(); }
 
         data = data.concat(chunk);
         var thisId = parseInt(data[data.length - 1].id_str, 10);
-        if (chunk.length && data.length >= 200) return search(thisId);
+        if (chunk.length && data.length >= 200) { return search(thisId); }
 
         // Results must be filtered ?
         if (user && user.twitter.filterOption === 'filter') {
@@ -121,7 +116,7 @@ function getUserTimeline(username, account, next, done) {
         }
 
         // end the operations if there are no tweets left to forward
-        if (data.length === 0) return done(undefined, '[]');
+        if (data.length === 0) { return done(undefined, {}); }
         next(user, data, pryv.forwardTweetsHistory, done);
       }
     }
@@ -155,31 +150,30 @@ function formatUserTimeline(user, data, next, done) {
 module.exports.formatUserTimeline = formatUserTimeline;
 
 function filterTweetsFromHistory(collection, query){
-    var len = collection.length;
-    var newCollection = [];
-    
-    for(var i=0; i<len; i++){
-        var item = collection[i];
-
-        if(item.text.indexOf(query) !== -1) {
-          newCollection.push(item);
-        }
+  var len = collection.length;
+  var newCollection = [];
+  
+  for(var i=0; i<len; i++){
+    var item = collection[i];
+    if(item.text.indexOf(query) !== -1) {
+      newCollection.push(item);
     }
-    return newCollection;
+  }
+  return newCollection;
 }
 
 function selectFavsFromHistory(collection, query){
-    var len = collection.length;
-    var newCollection = [];
-    
-    for(var i=0; i<len; i++){
-        var item = collection[i];
+  var len = collection.length;
+  var newCollection = [];
+  
+  for(var i=0; i<len; i++){
+    var item = collection[i];
 
-        if(item.text.indexOf(query) !== -1) {
-          newCollection.push(item);
-        }
+    if(item.text.indexOf(query) !== -1) {
+      newCollection.push(item);
     }
-    return newCollection;
+  }
+  return newCollection;
 }
 
 function getUserData(username, done) {
