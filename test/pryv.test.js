@@ -4,6 +4,25 @@ var should = require('should'),
     pryv = require('../source/lib/pryv'),
     usersStorage = require('../source/storage/users-storage'),
     app = require('../source/app'),
+    user = {
+      'twitter': {
+        'filter': '+Y',
+        'filterOption': '',
+        'credentials': [{
+          'accessToken': 'atk-string',
+          'accessSecret': 'ats-string',
+          'username': 'twitter-user'
+        }]
+      },
+      'pryv': {
+        'channelId': 'TePRIdMlgf',
+        'folderId': 'TPZZHj5YuM',
+        'credentials': {
+          'auth': 'auth-string',
+          'username': 'pryv-user'
+        }
+      }
+    },
     pryvUser = {
       "channelId": "TePRIdMlgf",
       "folderId": "TPZZHj5YuM",
@@ -66,12 +85,12 @@ var should = require('should'),
 describe('forwardTweet', function(){
     this.timeout(5000);
 
-  nock('https://jonmaim.rec.la')
-    .post('/TePRIdMlgf/events {"time":1358181370,"folderId":"TPZZHj5YuM","type":{"class":"message","format":"twitter"},"value":{"created_at":"Mon Jan 14 16:36:10 +0000 2013","id_str":"291588476627976192","text":"this is a test","user":{"screen_name":"testuser"}}}')
+  nock('https://pryv-user.rec.la')
+    .post('/TePRIdMlgf/events {}')
     .reply(200, {id: 'VTQkjkyIuM'}, {'Content-Type': 'application/json'});
 
   it('should send an event to the activity server', function(done){
-    pryv.forwardTweet(pryvUser, data, function(response){
+    pryv.forwardTweet(user, data, function(response){
       response.should.have.property('id');
       done();
     });

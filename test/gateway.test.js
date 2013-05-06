@@ -19,18 +19,28 @@ var should = require('should'),
           },
           'twitter': {
             'filter': '+Y',
-            'filterIsActive': 'true',
-            'credentials': {
-              'accessToken': 'atk-string',
-              'accessSecret': 'ats-string',
-              'username':'twitter_user'
-            }
+            'filterOption': '',
+            'credentials': [{
+              'accessToken': '',
+              'accessSecret': '',
+              'username':''
+            }]
           }
         }
       };
 
 
-describe('GET /auth-process-details', function(){
+describe('gateway', function(){
+
+  var id;
+  before(function(done){
+    usersStorage.createUser(userSettingsData.user, function(err, result){
+      result.should.have.property('ok');
+      id = result.ok;
+      done();
+    });
+  });
+
   it('should respond with json describing twitter\'s OAuth procedure', function(done){
     request(app)
       .get('/auth-process-details')
@@ -44,9 +54,7 @@ describe('GET /auth-process-details', function(){
         done();
     });
   })
-})
 
-describe('GET /user-settings-schema', function(){
   it('should provide a valid schema of a user description', function(done){
     request(app)
       .get('/user-settings-schema')
@@ -57,12 +65,14 @@ describe('GET /user-settings-schema', function(){
         if (err) return done(err);
         var env = JSV.createEnvironment();
         var report = env.validate(userSettingsData.user, res.body);
-        if (report.errors.length === 0) return done();
+        if (report.errors.length === 0) {
+          return done();
+        } else {
+          console.dir(report.errors);
+        }
     });
   })
-})
 
-describe('POST /user-settings', function(){
   var id;
   it('should insert new user settings in DB', function(done){
     request(app)
@@ -80,12 +90,13 @@ describe('POST /user-settings', function(){
         });
     });
   })
+
   it('should detect wrong JSON when POSTing /user-settings', function(done){
     request(app)
       .post('/user-settings')
       .send({
         'user': {
-          'pryv': {
+          'praive': {
             'credentials': {
               'username':'pryv_user',
               'auth':'auth_string'
@@ -95,10 +106,12 @@ describe('POST /user-settings', function(){
           },
           'twitter': {
             'filter': '+Y',
-            'filterIsActive': 'true',
-            'accessToken': 'atk-string',
-            'accessSecret': 'ats-string',
-            'username':'twitter_user'
+            'filterOption': '',
+            'credentials': [{
+              'accessToken': 'atk-string',
+              'accessSecret': 'ats-string',
+              'username':'twitter_user'
+            }]
           }
         } 
       })
@@ -111,52 +124,16 @@ describe('POST /user-settings', function(){
         done();
     });
   })
-  after(function(done){
-    usersStorage.deleteUser({_id:id}, function(message){
-      message.should.have.property('ok');
-      done();
-    });
-  });
-})
-
-describe('GET /user-settings/user', function(){ 
-  var id;
-  before(function(done){
-    var user = {
-      "twitter": {
-        "filter": "+Y",
-        "filterIsActive": 'true',
-        "credentials": {
-          "accessToken": "atk-string",
-          "accessSecret": "ats-string",
-          "username": "twitter-username"
-        }
-      },
-      "pryv": {
-        "channelId": "TePRIdMlgf",
-        "folderId": "TPZZHj5YuM",
-        "credentials": {
-          "auth": "auth-string",
-          "username": "pryv-username"
-        }
-      }
-    };
-    usersStorage.createUser(user, function(err, result){
-      result.should.have.property('ok');
-      id = result.ok;
-      done();
-    });
-  });
 
   it('should return info about user', function(done){
     request(app)
-      .get('/user-settings/pryv-username')
+      .get('/user-settings/pryv_user')
       .set('Accept', 'application/json')
       .expect('Content-Type', /json/)
       .expect(200)
       .end(function(err, res){
         if (err) return done(err);
-        res.body.pryv.credentials.username.should.equal('pryv-username');
+        res.body.pryv.credentials.username.should.equal('pryv_user');
         done();
     });
   });
@@ -174,51 +151,13 @@ describe('GET /user-settings/user', function(){
     });
   });
 
-  after(function(done){
-    usersStorage.deleteUser({_id:id}, function(result){
-      result.should.have.property('ok');
-      done();
-    });
-  });
-});
-
-describe('PUT /user-settings/user', function(){ 
-  var id;
-  before(function(done){
-    var user = {
-      "twitter": {
-        "filter": "+Y",
-        "filterIsActive": 'true',
-        "credentials": {
-          "accessToken": "atk-string",
-          "accessSecret": "ats-string",
-          "username": "twitter-username"
-        }
-      },
-      "pryv": {
-        "channelId": "TePRIdMlgf",
-        "folderId": "TPZZHj5YuM",
-        "credentials": {
-          "auth": "auth-string",
-          "username": "pryv-username"
-        }
-      }
-    };
-    usersStorage.createUser(user, function(err, result){
-      result.should.have.property('ok');
-      id = result.ok;
-      done();
-    });
-  });
-
   it('should update user info', function(done){
     request(app)
-      .put('/user-settings/pryv-username')
+      .put('/user-settings/pryv_user')
       .set('Accept', 'application/json')
       .send({
         'twitter': {
-          'filter': 'new filter',
-          'filterIsActive': 'true'
+          'filterOption': 'new'
         },
         'pryv': {
           'folderId': 'new folderId'
@@ -233,9 +172,9 @@ describe('PUT /user-settings/user', function(){
   });
 
   it('should find updated info in db', function(done){
-    usersStorage.readUser({'_id':id}, function(result){
+    usersStorage.readUser({'pryv.folderId':'new folderId'}, function(result){
       if (result) {
-        result.twitter.filter.should.equal('new filter');
+        result.twitter.filterOption.should.equal('new');
         done();
       }
     });
@@ -260,9 +199,10 @@ describe('PUT /user-settings/user', function(){
   });
 
   after(function(done){
-    usersStorage.deleteUser({_id:id}, function(result){
+    usersStorage.deleteUser({'pryv.credentials.auth':'auth_string'}, function(result){
       result.should.have.property('ok');
       done();
     });
   });
+
 });

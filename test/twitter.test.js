@@ -5,7 +5,7 @@ var should = require('should'),
     nTwitter = require('ntwitter');
 
 
-describe('twitter gateway', function() {
+describe('twitter api', function() {
   this.timeout(5000);
 
   var user = {},
@@ -17,11 +17,11 @@ describe('twitter gateway', function() {
       'twitter': {
         'filter': '+Y',
         'filterIsActive': 'true',
-        'credentials': {
+        'credentials': [{
           'accessToken': 'atk-string',
           'accessSecret': 'ats-string',
           'username': 'twitter-user'
-        }
+        }]
       },
       'pryv': {
         'channelId': 'TePRIdMlgf',
@@ -64,7 +64,7 @@ describe('twitter gateway', function() {
          }
         }]);
 
-    twitter.getUserTimeline('pryv-user', function(err, data) {
+    twitter.getUserTimeline('pryv-user', 'twitter-user', function(err, data) {
       should.exist(data);
       data.should.not.be.empty;
       done()
