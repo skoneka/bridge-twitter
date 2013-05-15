@@ -13,29 +13,10 @@ class bridge-twitter($httpport,$twitterKey,$twitterSecret) {
   $logsdir = $pryv::logsdir
   $configdest = "${appdir}.config.json"
 
-  $nodeversion = 'v0.8.21'
-  $mongodbversion = '2.2.3'
-
-
 
   setup::unpack{'unpack_mechanism_bridge-twitter':
     livedir => $pryv::livedir,
     app     => $app,
-  }
-
-  # dependencies
-  class {'nodesetup': nodeversion => $nodeversion}
-  class {'mongodb': mongodbversion => $mongodbversion}
-
-
-  if ($environment == "staging") {
-     secret::ssl{"rec.la": }
-     $httpcerts = "${pryv::livedir}/secret/rec.la"
-     $staging = true
-  } else {
-     secret::ssl{"pryv.io": }
-     $httpcerts = "${pryv::livedir}/secret/pryv.io"
-     $staging = false
   }
 
   file { $appdir:
@@ -60,7 +41,7 @@ class bridge-twitter($httpport,$twitterKey,$twitterSecret) {
     require => File["$appdir"],
   }
 
-  file { 'upstart':
+  file { 'bridge-twitter upstart':
     ensure  => 'file',
     path    => '/etc/init/bridge-twitter.conf',
     content => template('head/upstart-default-nodeapp-minimal-watch.conf.erb'),
