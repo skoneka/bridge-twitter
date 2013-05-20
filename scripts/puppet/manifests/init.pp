@@ -1,5 +1,5 @@
 # environment should be "staging" or "production"
-class bridge-twitter($httpport,$twitterKey,$twitterSecret) {
+class bridge-twitter($httpport,$callbackBaseURL,$twitterKey,$twitterSecret) {
 
   $environment = $pryv::environment
   notify {"Bridge-twitter server module in ${environment}":}
