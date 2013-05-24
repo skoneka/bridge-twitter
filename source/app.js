@@ -6,7 +6,6 @@ var express = require('express'),
     twitter = require('./lib/twitter'),
     usersStorage = require('./storage/users-storage');
 
-
 var app = module.exports = express();
 
 app.configure(function(){
