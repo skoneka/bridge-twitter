@@ -8,7 +8,7 @@ var express = require('express'),
 
 var app = module.exports = express();
 
-app.configure(function(){
+app.configure(function () {
   app.set('port', process.env.PORT || 3000);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
@@ -16,21 +16,21 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.cookieParser());
-  app.use(express.session({secret:'whatever'}));
+  app.use(express.session({secret: 'whatever'}));
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
 });
 
-app.configure('development', function(){
+app.configure('development', function () {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
-app.configure('production', function() {
+app.configure('production', function () {
   app.use(express.errorHandler());
 });
 
 
-usersStorage.listUsers(function(users){
+usersStorage.listUsers(function (users) {
   twitter.streamTweetsFromExistingUsers(users);
 });
 

@@ -78,7 +78,7 @@ function removeDuplicateEvents(user, data, next, done){
 
   var dataArray = JSON.parse(data);
   request
-    .get('https://' + user.credentials.username + '.rec.la:443/' + user.channelId +
+    .get('https://' + user.credentials.username + '.' + domain + ':443/' + user.channelId +
       '/events?fromTime=' + dataArray[dataArray.length-1].time + '&toTime=' + (dataArray[0].time+1))
     .set('Authorization', user.credentials.auth)
     .on('error', function(err) {winston.error(err);})
