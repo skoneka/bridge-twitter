@@ -5,13 +5,14 @@
 
 module.exports = index;
 
-var beta = require('../lib/beta');
+var beta = require('../lib/beta'),
+    config = require('../utils/config');
 
 function index(app) {
 	app.get('/', renderIndex);
 
 	function renderIndex(req, res){
-	  res.render('index');
+	  res.render('index', {'domain': config.get('pryvdomain')});
 	};
 
 
