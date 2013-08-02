@@ -12,7 +12,7 @@ export NODE_VERSION=v0.8.23
 export DATA_FOLDER=$SCRIPT_FOLDER/../..
 export LOGS_FOLDER=${DATA_FOLDER}/logs
 
-export MONGO_NAME=mongodb-osx-x86_64-2.4.1
+export MONGO_NAME=mongodb-osx-x86_64-2.4.5
 export MONGO_DL_BASE_URL=http://fastdl.mongodb.org/osx
 export MONGO_BASE_FOLDER=$DATA_FOLDER
 export MONGO_DATA_FOLDER=$DATA_FOLDER/mongodb-data
