@@ -20,23 +20,16 @@
   <body>
 
     <script>
-      /**
-      * process the form and request access
-      */
+    /**
+     * process the form and request access
+     */
       var requestedPermissions = [
-                                    {
-                                      "channelId" : "diary",
-                                      "defaultName" : "Diary",
-                                      "level" : "read",
-                                      "folderPermissions" : [
-                                        {
-                                          "folderId" : "social-twitter",
-                                          "level" : "manage",
-                                          "defaultName" : "Twitter"
-                                        }
-                                      ]
-                                    }
-                                  ];
+                                  {
+                                    "streamId" : "social-twitter",
+                                    "defaultName" : "Twitter",
+                                    "level" : "manage"
+                                  }
+                                ];
       
       // ----------------------- //
       var settings = {
@@ -63,6 +56,8 @@
         }
       };
 
+
+    Pryv.Access.config.registerURL = Pryv.Access.config.registerStagingURL;
     Pryv.Access.setup(settings);
     </script>
 

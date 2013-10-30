@@ -135,12 +135,13 @@ function formatUserTimeline(user, data, next, done) {
     var tweet = {
       time: pryv.toTimestamp(currentTweet.created_at),
       tempRefId: i.toString(),
-      folderId: user.pryv.folderId,
-      type: {
-        class: 'message',
-        format: 'twitter'
-      },
-      value: currentTweet
+      streamId: 'social-twitter',
+      type: 'message/twitter',
+      content: {
+        id: currentTweet.id_str,
+        'screen-name': currentTweet.user.screen_name,
+        text: currentTweet.text
+      }
     };
     tweetsHistory.push(tweet);
   }

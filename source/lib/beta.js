@@ -40,7 +40,7 @@ exports.createUser = function(req, res) {
       };
       usersStorage.createUser(user, function(err, result){
         twitter.streamUserTweets(user);
-        res.render('beta', {data: req.session, result: result});
+        res.render('beta', {data: req.session, result: result, domain: config.get('pryvdomain')});
       });
     } else {
       var condition = {'pryv.credentials.username':req.session.username};
@@ -49,7 +49,7 @@ exports.createUser = function(req, res) {
         'username':req.session.username
       }}};
       usersStorage.updateUser(condition, update, function(err, result){
-        res.render('beta', {data: req.session, result: result});
+        res.render('beta', {data: req.session, result: result, domain: config.get('pryvdomain')});
       });
     }
   });
@@ -73,7 +73,7 @@ exports.readPrefs = function(req, res) {
         });
       }
     });
-    res.render('prefs', {data: req.session, result: result});
+    res.render('prefs', {data: req.session, result: result, domain: config.get('pryvdomain')});
   });
 };
 
