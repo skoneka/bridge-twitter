@@ -6,14 +6,15 @@ var request = require('superagent'),
 exports.forwardTweet = function(user, data, done) {
     var tweet = {};
     if (data.event === 'favorite') {
+      console.dir(data);
       tweet = {
         time: toTimestamp(data.created_at),
         streamId: 'social-twitter',
         type: 'message/twitter',
         content: {
-          id: data.id_str,
-          'screen-name': data.user.screen_name,
-          text: data.text
+          id: data.target.id_str,
+          'screen-name': data.target.screen_name,
+          text: data.target_object.text
         }
       };
     } else if (data.created_at !== undefined &&
