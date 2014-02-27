@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Bridge: Twitter</title>
+    <title>Pryv: Twitter integration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -15,7 +15,7 @@
         width:130px;
       }
     </style>
-    <script type="text/javascript" src="https://176.58.88.91:3000/dist/pryv.js"></script>
+    <script type="text/javascript" src="js/pryv.js"></script>
   </head>
   <body>
     <script>
@@ -29,7 +29,7 @@
                                     "level" : "manage"
                                   }
                                 ];
-      
+
       // ----------------------- //
       var settings = {
         requestingAppId : 'bridge-twitter',
@@ -41,8 +41,8 @@
           needSignin : function(popupUrl, pollUrl, pollRateMs) { },
           needValidation : function(popupUrl, pollUrl, pollRateMs) {},
           accepted : function(username, appToken, languageCode) {
-            console.log("** SUCCESS! username:" + username + 
-                        " appToken:" + appToken + 
+            console.log("** SUCCESS! username:" + username +
+                        " appToken:" + appToken +
                         " lang:" + languageCode);
             if (!username && !appToken && !languageCode) {
               console.log("logged out !");
@@ -57,5 +57,5 @@
           }
         }
       };
-      Pryv.Auth.setup(settings);
+      pryv.Auth.setup(settings);
     </script>

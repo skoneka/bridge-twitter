@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Bridge: Twitter</title>
+    <title>Pryv: Twitter integration</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -15,7 +15,7 @@
         width:130px;
       }
     </style>
-    <script type="text/javascript" src="https://176.58.88.91:3000/dist/pryv.js"></script>
+    <script type="text/javascript" src="js/pryv.js"></script>
   </head>
   <body>
 
@@ -30,7 +30,7 @@
                                     "level" : "manage"
                                   }
                                 ];
-      
+
       // ----------------------- //
       var settings = {
         requestingAppId : 'bridge-twitter',
@@ -42,8 +42,8 @@
           needSignin : function(popupUrl, pollUrl, pollRateMs) { },
           needValidation : function(popupUrl, pollUrl, pollRateMs) {},
           accepted : function(username, appToken, languageCode) {
-            console.log("** SUCCESS! username:" + username + 
-                        " appToken:" + appToken + 
+            console.log("** SUCCESS! username:" + username +
+                        " appToken:" + appToken +
                         " lang:" + languageCode);
             window.location = "/beta?appToken="+appToken+"&username="+username;
           },
@@ -57,8 +57,8 @@
       };
 
 
-    Pryv.Auth.config.registerURL = Pryv.Auth.config.registerStagingURL;
-    Pryv.Auth.setup(settings);
+    pryv.Auth.config.registerURL = pryv.Auth.config.registerStagingURL;
+    pryv.Auth.setup(settings);
     </script>
 
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -69,7 +69,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand">Bridge: Twitter</a>
+          <a class="brand">Pryv: Twitter integration</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li class="active"><a>Home</a></li>
@@ -82,8 +82,8 @@
     <div class="container">
 
       <span id="pryvButton"></span>
-      <h2>Beta testable version of the twitter bridge</h2>
-      you can use perkikiki/poilonez
+      <h2>Beta testable version of the Twitter-to-Pryv integration</h2>
+      <!-- you can use perkikiki/poilonez -->
     </div>
 
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>

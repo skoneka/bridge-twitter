@@ -37,7 +37,7 @@ if (configFile) {
 
 nconf.defaults({
   //TODO: group Pryv API settings in "pryv" property
-  pryvdomain : 'rec.la', // will be set to pryv.io in production
+  pryvdomain : 'pryv.in', // will be set to pryv.io in production
   pryvStaging: true,
   database: {
     host: 'localhost',
@@ -46,7 +46,8 @@ nconf.defaults({
   http: {
     ip: '0.0.0.0',
     certsPathAndKey: './cert/rec.la',
-    port: 3000 // !! take care of updating twitter:callbackBaseURL accordingly
+    port: 3000, // !! take care of updating twitter:callbackBaseURL accordingly,
+    noSSL: false
   },
   logs: {
     console: {

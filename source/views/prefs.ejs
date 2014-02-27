@@ -34,7 +34,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="#">Bridge: Twitter</a>
+          <a class="brand" href="#">Pryv: Twitter integration</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="/">Home</a></li>
@@ -48,42 +48,45 @@
     <div class="container">
 
       <span id="pryvButton"></span>
-      <h2>Preferences for user <%= data.username %></h2>
+      <h2>Twitter integration settings</h2>
       <br />
       <span id="pryvButton"></span>
 
       <form class="well" action="" method="" onsubmit="return submitForm();" id="prefsForm">
-        <label>PrYv filter</label>
-        <input id="filter" type="text" class="span3" placeholder="set your filter" value="<%= result.twitter.filter %>">
-        <span class="help-inline">Tweets with this filter will be forwarded if the filter is active</span>
         <label class="select">
-          Which tweets are forwarded to PrYv ?<br />
+          Add the following tweets to my Pryv:<br />
           <select id="filterOption">
-            <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All of them</option>
-            <option value="filter" <% if (result.twitter.filterOption === 'filter') { %>selected<% } %>>Only the one matching my filter</option>
-            <option value="favorite" <% if (result.twitter.filterOption === 'favorite') { %>selected<% } %>>Only the one I favorite</option>
+            <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All tweets</option>
+            <option value="filter" <% if (result.twitter.filterOption === 'filter') { %>selected<% } %>>Only those containing my filter text</option>
+            <option value="favorite" <% if (result.twitter.filterOption === 'favorite') { %>selected<% } %>>Only my favorite tweets</option>
           </select>
         </label>
+
+        <label>Filter text</label>
+        <input id="filter" type="text" class="span3" placeholder="Set your filter" value="<%= result.twitter.filter %>">
+        <span class="help-inline">If the filter is active, only tweets containing this text will be added to Pryv</span>
+
         <div id="formResult"></div>
+
         <button type="submit" class="btn">Submit</button>
       </form>
 
       <% result.twitter.credentials.forEach(function(credential){
         if (credential.accessToken !== '') {%>
       <form class="well">
-        PrYv is connected to the twitter account <b><%= credential.username %></b>. New tweets will automatically be forwarded to PrYv based on your preferences.
+        Pryv is connected to the Twitter account <b><%= credential.username %></b>. New tweets will automatically be added to your Pryv based on your preferences.
         <br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
         <div id="<%= credential.username %>"></div>
       </form>
       <% }}) %>
 
-      <p><a href="/auth">Add a new twitter account</a></p>
-      <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the twitter settings</a> of your corresponding account.</p><br />
+      <p><a href="/auth">Add a new Twitter account</a></p>
+      <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the Twitter settings</a> of your corresponding account.</p><br />
 
 
       <script>
       //TODO: remove this debugging script
-      var connection = new Pryv.Connection({username:'perkikiki', auth:'VPoFEsuJRM', staging: true});
+      var connection = new pryv.Connection({username:'perkikiki', auth:'VPoFEsuJRM', staging: true});
 
       var eventData = { streamId : 'social-twitter', type: 'message/twitter', content: {id: '1234', 'screen-name':'balbla'} };
       connection.events.create(eventData, function(err, event) {
