@@ -7,7 +7,7 @@ var should = require('should'),
 var user = {
   'twitter': {
     'filter': '+Y',
-    'filterOption': '',
+    'filterOption': 'filter',
     'credentials': [{
       'accessToken': 'atk-string',
       'accessSecret': 'ats-string',
@@ -25,7 +25,7 @@ var user = {
 var data = {
   'created_at': 'Mon Jan 14 16:36:10 +0000 2013',
   'id_str': '291588476627976192',
-  'text': 'this is a test',
+  'text': 'this is a test +Y',
   'user': {
     'screen_name': 'testuser'
   }
@@ -75,14 +75,15 @@ var wrongFormatedData = [{
 describe('forwardTweet', function () {
   this.timeout(5000);
 
-  nock('https://pryv-user.rec.la')
+  nock('https://pryv-user.pryv.in')
     .post('/events')
     .reply(200, {event: {id: 'test'}}, {'Content-Type': 'application/json'});
 
-  it('should send an event to the activity server', function (done) {
-    pryv.forwardTweet(user, data, function (response) {
-      response.should.have.property('event');
-      response.event.should.have.property('id');
+  it('should send favorite tweets to Pryv', function (done) {
+    pryv.forwardTweet(user, data, function (err, createdEvent) {
+      should.not.exist(err);
+      should.exist(createdEvent);
+      createdEvent.should.have.property('id');
       done();
     });
   });
@@ -105,7 +106,7 @@ describe('forwardTweetsHistory', function () {
     }
   };
 
-  nock('https://jonmaim.rec.la')
+  nock('https://jonmaim.pryv.in')
     .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { '0': { id: 'eTaUhq6IgM' } }, {'Content-Type': 'application/json'});
 
@@ -116,7 +117,7 @@ describe('forwardTweetsHistory', function () {
     });
   });
 
-  nock('https://jonmaim.rec.la')
+  nock('https://jonmaim.pryv.in')
     .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { id: 'invalid-access-token', message: 'The access token is missing: expected an "Authorization" header or an "auth" query string parameter.' }, {'Content-Type': 'application/json'});
 
@@ -127,7 +128,7 @@ describe('forwardTweetsHistory', function () {
     });
   });
 
-  nock('https://jonmaim.rec.la')
+  nock('https://jonmaim.pryv.in')
     .post('/test/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
     .reply(200, { id: 'unknown-channel', message: 'Cannot find channel "test".' }, {'Content-Type': 'application/json'});
 
@@ -139,7 +140,7 @@ describe('forwardTweetsHistory', function () {
   });
 
   it('should avoid forwarding duplicate tweets', function (done) {
-    nock('https://jonmaim.rec.la')
+    nock('https://jonmaim.pryv.in')
     .get('/TePRIdMlgf/events')
     .reply(200, [{time: 1358181371}], {'Content-Type': 'application/json'});
     pryv.removeDuplicateEvents(pryvUser, JSON.stringify(formatedData), function (user, dataArray) {

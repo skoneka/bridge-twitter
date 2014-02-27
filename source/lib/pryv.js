@@ -3,43 +3,45 @@ var request = require('superagent'),
     config = require('../utils/config'),
     Pryv = require('pryv'),
     domain = config.get('pryvdomain'),
-    staging = config.get('pryvStaging');
+    staging = config.get('pryvStaging'),
+    timestamp = require('unix-timestamp');
 
+/**
+ * @param user
+ * @param data
+ * @param {Function} done (err, event) Returns the Pryv event created if forwarded
+ */
 exports.forwardTweet = function (user, data, done) {
   console.log('DATA:');
   console.dir(data);
-  var tweet = {};
+  var tweet = {
+    time: timestamp.fromDate(data.created_at),
+    streamId: user.pryv.streamId,
+    type: 'message/twitter'
+  };
   if (data.event === 'favorite') {
-    tweet = {
-      time: toTimestamp(data.created_at),
-      streamId: user.pryv.streamId,
-      type: 'message/twitter',
-      content: {
-        id: data.target.id_str,
-        'screen-name': data.target.screen_name,
-        text: data.target_object.text
-      }
+    tweet.content = {
+      id: data.target.id_str,
+      'screen-name': data.target.screen_name,
+      text: data.target_object.text
     };
-    sendTweet(user, tweet, done);
-  } else if (data.created_at !== undefined &&
-      ! data.hasOwnProperty('event') &&
-      user.twitter.filterOption !== 'favorite') {
+    return sendTweet(user, tweet, done);
+  } else if (data.created_at &&
+             ! data.hasOwnProperty('event') &&
+             user.twitter.filterOption !== 'favorite') {
     if ((user.twitter.filterOption === 'filter' &&
-      data.text.indexOf(user.twitter.filter) !== -1) ||
-      user.twitter.filterOption === 'all') {
-      tweet = {
-        time: toTimestamp(data.created_at),
-        streamId: user.pryv.streamId,
-        type: 'message/twitter',
-        content: {
-          id: data.id_str,
-          'screen-name': data.user.screen_name,
-          text: data.text
-        }
+         data.text.indexOf(user.twitter.filter) !== -1) ||
+        user.twitter.filterOption === 'all') {
+      tweet.content = {
+        id: data.id_str,
+        'screen-name': data.user.screen_name,
+        text: data.text
       };
+      return sendTweet(user, tweet, done);
     }
-    sendTweet(user, tweet, done);
   }
+  // no need to forward
+  done(null, null);
 };
 
 function sendTweet(user, tweet, done) {
@@ -48,16 +50,11 @@ function sendTweet(user, tweet, done) {
     auth: user.pryv.credentials.auth,
     staging: staging
   });
-  var eventData = {
-    streamId : user.pryv.streamId,
-    time: tweet.time,
-    type: 'message/twitter',
-    content: tweet.content
-  };
-  connection.events.create(eventData, function (err, event) {
+
+  connection.events.create(tweet, function (err, event) {
     console.log('Event created:');
     console.dir(event);
-    done();
+    done(err, event || null);
 //    connection.events.get({limit : 3}, function (err, events) {
 //      console.dir(events);
 //    });
@@ -84,14 +81,6 @@ function sendFilteredData(user, data, done) {
   });
 }
 module.exports.sendFilteredData = sendFilteredData;
-
-
-function toTimestamp(strDate) {
-  var date = Date.parse(strDate);
-  return date / 1000;
-}
-module.exports.toTimestamp = toTimestamp;
-
 
 function removeDuplicateEvents(user, data, next, done) {
   var dataArray = JSON.parse(data);

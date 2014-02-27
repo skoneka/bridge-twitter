@@ -35,8 +35,11 @@ function streamUserTweets(user) {
     openedStreams[currentTwitterUsername].stream('user', condition, function (stream) {
       openedStreams[currentTwitterUsername].streamRef = stream;
       stream.on('data', function (data) {
-        pryv.forwardTweet(user, data, function (response) {
-          winston.info('Tweet successfully stored on Pryv with id ' + response.id);
+        pryv.forwardTweet(user, data, function (err, createdEvent) {
+          if (err) {
+            return winston.warn(err);
+          }
+          winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
         });
       });
       stream.on('error', function (error, code) {
