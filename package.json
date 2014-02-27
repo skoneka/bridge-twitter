@@ -1,28 +1,29 @@
 {
-  "name": "twitter-gateway",
-  "description": "Gateway between Twitter's API and Pryv's API",
-  "version": "0.0.1",
+  "name": "pryv-twitter-gateway",
+  "description": "Integration gateway between the Twitter and Pryv APIs",
+  "version": "0.1.0",
   "author": "Xavier Righetti <xavier@thefabric.com>",
   "private": true,
   "dependencies": {
-    "express": "3.x",
-    "ntwitter": "0.5.x",
-    "winston": "0.6.x",
-    "async": "0.1.x",
-    "superagent": "0.12.x",
+    "async": "0.2.x",
     "ejs": "*",
-    "mongoose": "3.5",
-    "nconf": "*",
+    "express": "3.x",
     "JSV": "*",
-    "lodash": "*",
-    "oauth": "*"
+    "lodash": "2.4.x",
+    "mongoose": "3.5.x",
+    "nconf": "0.6.x",
+    "ntwitter": "0.5.x",
+    "oauth": "0.9.x",
+    "pryv": "0.1.x",
+    "superagent": "0.12.x",
+    "winston": "0.6.x"
   },
   "devDependencies": {
-    "blanket": "*",
-    "mocha": "1.7.x",
-    "supertest": "0.5.x",
-    "nock": "0.14.x",
-    "should": "*"
+    "blanket": "latest",
+    "mocha": "latest",
+    "nock": "latest",
+    "should": "latest",
+    "supertest": "latest"
   },
   "scripts":{
     "blanket":{"pattern": "/twitter-gateway/source/"}
