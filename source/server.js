@@ -3,7 +3,6 @@ var app = require('./app'),
     fs = require('fs'),
     winston = require('winston');
 
-
 var certsPathAndKey = config.get('http:certsPathAndKey');
 var serverOptions = {
   key: fs.readFileSync(certsPathAndKey+'-key.pem').toString(),

@@ -74,6 +74,7 @@ function getUserTimeline(username, account, next, done) {
       access_token_key: credentials.accessToken,
       access_token_secret: credentials.accessSecret
     });
+
     search();
 
     function search(lastId) {
@@ -126,6 +127,8 @@ module.exports.getUserTimeline = getUserTimeline;
 
 
 function formatUserTimeline(user, data, next, done) {
+
+  console.dir(data);
 
   var len = data.length;
   var tweetsHistory = [];

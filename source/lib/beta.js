@@ -22,7 +22,7 @@ exports.createUser = function(req, res) {
       var user = {
         'twitter': {
           'filter': '+Y',
-          'filterOption': '',
+          'filterOption': 'all',
           'credentials': [{
             'accessToken': '',
             'accessSecret': '',

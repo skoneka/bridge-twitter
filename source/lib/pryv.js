@@ -1,53 +1,61 @@
 var request = require('superagent'),
     winston = require('winston'),
     config = require('../utils/config'),
+    Pryv = require('pryv'),
     domain = config.get('pryvdomain');
 
 exports.forwardTweet = function(user, data, done) {
-    var tweet = {};
-    if (data.event === 'favorite') {
-      console.dir(data);
+  console.log("DATA:");
+  console.dir(data);
+  var tweet = {};
+  if (data.event === 'favorite') {
+    tweet = {
+      time: toTimestamp(data.created_at),
+      streamId: 'social-twitter',
+      type: 'message/twitter',
+      content: {
+        id: data.target.id_str,
+        'screen-name': data.target.screen_name,
+        text: data.target_object.text
+      }
+    };
+    sendTweet(user, tweet);
+  } else if (data.created_at !== undefined &&
+      !data.hasOwnProperty('event') &&
+      user.twitter.filterOption !== 'favorite') {
+    if ((user.twitter.filterOption === 'filter' &&
+      data.text.indexOf(user.twitter.filter) !== -1) ||
+      user.twitter.filterOption === 'all') {
       tweet = {
         time: toTimestamp(data.created_at),
         streamId: 'social-twitter',
         type: 'message/twitter',
-        content: {
-          id: data.target.id_str,
-          'screen-name': data.target.screen_name,
-          text: data.target_object.text
+        content: {  
+          id: data.id_str,
+          'screen-name': data.user.screen_name,
+          text: data.text
         }
       };
-    } else if (data.created_at !== undefined &&
-        !data.hasOwnProperty('event') &&
-        user.twitter.filterOption !== 'favorite') {
-      if ((user.twitter.filterOption === 'filter' &&
-        data.text.indexOf(user.twitter.filter) !== -1) ||
-        user.twitter.filterOption === 'all') {
-        tweet = {
-          time: toTimestamp(data.created_at),
-          streamId: 'social-twitter',
-          type: 'message/twitter',
-          content: {
-            id: data.id_str,
-            'screen-name': data.user.screen_name,
-            text: data.text
-          }
-        };
-      }
     }
-    request
-      .post('https://' + user.pryv.credentials.username +
-        '.' + domain + ':443/events')
-      .set('Authorization', user.pryv.credentials.auth)
-      .send(tweet)
-      .on('error', function(err) {winston.error('connection error: ' + err);})
-      .end(function(res){
-        if (res.ok) {
-          done(res.body);
-        }
-      });
+    sendTweet(user, tweet);
+  }
 };
 
+function sendTweet(user, tweet) {
+  var connection = new Pryv.Connection({username:user.pryv.credentials.username, auth:user.pryv.credentials.auth, staging: true});
+
+  // create a event
+  var eventData = { streamId : 'social-twitter', time: tweet.time, type: 'message/twitter', content: tweet.content };
+  connection.events.create(eventData, function(err, event) { 
+    console.log('Event created:');
+    console.dir(event);
+
+    connection.events.get({limit : 3}, function (err, events) {
+      console.dir(events);
+    })
+  });
+}
+module.exports.sendTweet = sendTweet;
 
 exports.forwardTweetsHistory = function(user, data, done) {
   removeDuplicateEvents(user, data, sendFilteredData, done);

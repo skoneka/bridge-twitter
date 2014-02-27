@@ -80,6 +80,21 @@
       <p><a href="/auth">Add a new twitter account</a></p>
       <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the twitter settings</a> of your corresponding account.</p><br />
 
+
+      <script>
+      var connection = new Pryv.Connection({username:'perkikiki', auth:'VPoFEsuJRM', staging: true});
+
+      var eventData = { streamId : 'social-twitter', type: 'message/twitter', content: {id: '1234', 'screen-name':'balbla'} };
+      connection.events.create(eventData, function(err, event) { 
+        console.log('Event created:');
+        console.dir(event);
+
+        connection.events.get({limit : 3}, function (err, events) {
+          console.dir(events);
+        })
+      });
+      </script>
+
     </div>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>

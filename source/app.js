@@ -4,6 +4,7 @@
 
 var express = require('express'),
     twitter = require('./lib/twitter'),
+    Pryv = require('pryv'),
     usersStorage = require('./storage/users-storage');
 
 
@@ -32,7 +33,34 @@ app.configure('production', function() {
 
 
 usersStorage.listUsers(function(users){
+  console.log(users);
   twitter.streamTweetsFromExistingUsers(users);
+});
+
+
+var connection = new Pryv.Connection({username:'perkikiki',auth:'VPoFEsuJRM', staging: true});
+var filter = new Pryv.Filter({limit : 20});
+
+connection.accessInfo(function(error, infos) {
+
+      if (error) console.log(error);
+      console.log('MY FIRT APP signed in:');
+      console.dir(infos);
+
+
+      console.log("my connection:");
+      console.log("##############");
+      console.dir(connection);
+      // create an event to remeber that you logged in
+
+      // connection.events.get(filter, function(error, events) {
+      //   if (error) {
+      //     console.error(error);
+      //   } else {
+      //     console.dir(events);
+      //   }
+      // });
+
 });
 
 
