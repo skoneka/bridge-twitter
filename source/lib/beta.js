@@ -30,8 +30,7 @@ exports.createUser = function(req, res) {
           }]
         },
         'pryv': {
-          'channelId': 'diary',
-          'folderId': 'social-twitter',
+          'streamId': 'social-twitter',
           'credentials': {
             'auth': req.session.appToken,
             'username': req.session.username
@@ -97,7 +96,7 @@ exports.callback = function(req, res) {
     req.session.oauth.verifier = req.query.oauth_verifier;
     var oauth = req.session.oauth;
 
-    oa.getOAuthAccessToken(oauth.token,oauth.token_secret,oauth.verifier, 
+    oa.getOAuthAccessToken(oauth.token,oauth.token_secret,oauth.verifier,
     function(error, oauth_access_token, oauth_access_token_secret, results){
       if (error){
         winston.error(error);

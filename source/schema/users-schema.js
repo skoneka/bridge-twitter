@@ -41,11 +41,7 @@ module.exports = function(isRequired) {
 				type: 'object',
 				required : isRequired === action.CREATE,
 				properties : {
-					'channelId': {
-						type: 'string',
-						required : isRequired === action.CREATE
-					},
-					'folderId': {
+					'streamId': {
 						type: 'string',
 						required : isRequired === action.CREATE
 					},

@@ -35,9 +35,10 @@ if (configFile) {
   nconf.file({ file: configFile});
 }
 
-
 nconf.defaults({
+  //TODO: group Pryv API settings in "pryv" property
   pryvdomain : 'rec.la', // will be set to pryv.io in production
+  pryvStaging: true,
   database: {
     host: 'localhost',
     name: 'twitter-gateway'

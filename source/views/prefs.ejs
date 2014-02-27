@@ -52,11 +52,11 @@
       <br />
       <span id="pryvButton"></span>
 
-      <form class="well" action="" method="" onsubmit="return submitForm();" id="prefsForm">  
-        <label>PrYv filter</label>  
-        <input id="filter" type="text" class="span3" placeholder="set your filter" value="<%= result.twitter.filter %>">  
+      <form class="well" action="" method="" onsubmit="return submitForm();" id="prefsForm">
+        <label>PrYv filter</label>
+        <input id="filter" type="text" class="span3" placeholder="set your filter" value="<%= result.twitter.filter %>">
         <span class="help-inline">Tweets with this filter will be forwarded if the filter is active</span>
-        <label class="select">  
+        <label class="select">
           Which tweets are forwarded to PrYv ?<br />
           <select id="filterOption">
             <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All of them</option>
@@ -66,15 +66,15 @@
         </label>
         <div id="formResult"></div>
         <button type="submit" class="btn">Submit</button>
-      </form>  
+      </form>
 
       <% result.twitter.credentials.forEach(function(credential){
         if (credential.accessToken !== '') {%>
-      <form class="well">  
+      <form class="well">
         PrYv is connected to the twitter account <b><%= credential.username %></b>. New tweets will automatically be forwarded to PrYv based on your preferences.
         <br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
         <div id="<%= credential.username %>"></div>
-      </form> 
+      </form>
       <% }}) %>
 
       <p><a href="/auth">Add a new twitter account</a></p>
@@ -82,10 +82,11 @@
 
 
       <script>
+      //TODO: remove this debugging script
       var connection = new Pryv.Connection({username:'perkikiki', auth:'VPoFEsuJRM', staging: true});
 
       var eventData = { streamId : 'social-twitter', type: 'message/twitter', content: {id: '1234', 'screen-name':'balbla'} };
-      connection.events.create(eventData, function(err, event) { 
+      connection.events.create(eventData, function(err, event) {
         console.log('Event created:');
         console.dir(event);
 
