@@ -52,13 +52,7 @@ function sendTweet(user, tweet, done) {
   });
 
   connection.events.create(tweet, function (err, event) {
-    console.log('Event created:');
-    console.dir(err);
-    console.dir(event);
     done(err, event || null);
-//    connection.events.get({limit : 3}, function (err, events) {
-//      console.dir(events);
-//    });
   });
 }
 module.exports.sendTweet = sendTweet;
