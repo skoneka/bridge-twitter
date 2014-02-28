@@ -154,7 +154,7 @@ describe('gateway', function () {
     request(app)
         .put('/user-settings/pryv_user')
         .set('Accept', 'application/json')
-        .send({'twitter': {'filterOption': 'new'}, 'pryv': {'folderId': 'new folderId'}})
+        .send({'twitter': {'filterOption': 'new'}, 'pryv': {'streamId': 'new streamId'}})
         .expect('Content-Type', /json/)
         .expect(200)
         .end(function (err) {
@@ -164,7 +164,7 @@ describe('gateway', function () {
   });
 
   it('should find updated info in db', function (done) {
-    usersStorage.readUser({'pryv.folderId': 'new folderId'}, function (result) {
+    usersStorage.readUser({'pryv.streamId': 'new streamId'}, function (result) {
       if (result) {
         result.twitter.filterOption.should.equal('new');
         done();
