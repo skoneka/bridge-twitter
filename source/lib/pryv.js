@@ -21,7 +21,7 @@ exports.forwardTweet = function (user, data, done) {
   };
   if (data.event === 'favorite') {
     tweet.content = {
-      id: data.target.id_str,
+      id: +data.target.id_str,
       'screen-name': data.target.screen_name,
       text: data.target_object.text
     };
@@ -33,7 +33,7 @@ exports.forwardTweet = function (user, data, done) {
          data.text.indexOf(user.twitter.filter) !== -1) ||
         user.twitter.filterOption === 'all') {
       tweet.content = {
-        id: data.id_str,
+        id: +data.id_str,
         'screen-name': data.user.screen_name,
         text: data.text
       };
@@ -53,6 +53,7 @@ function sendTweet(user, tweet, done) {
 
   connection.events.create(tweet, function (err, event) {
     console.log('Event created:');
+    console.dir(err);
     console.dir(event);
     done(err, event || null);
 //    connection.events.get({limit : 3}, function (err, events) {

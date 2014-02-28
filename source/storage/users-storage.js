@@ -24,8 +24,7 @@ var schema = mongoose.Schema({
       username: String,
       auth: String
     },
-    channelId: String,
-    folderId: String
+    streamId: String
   },
   twitter: {
     credentials: [{
