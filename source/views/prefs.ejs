@@ -88,7 +88,7 @@
       //TODO: remove this debugging script
       var connection = new pryv.Connection({username:'perkikiki', auth:'VPoFEsuJRM', staging: true});
 
-      var eventData = { streamId : 'social-twitter', type: 'message/twitter', content: {id: '1234', 'screen-name':'balbla'} };
+      var eventData = { streamId : 'social-twitter', type: 'message/twitter', content: {id: 1234, 'screen-name':'balbla', text: 'Oh my tweet!'} };
       connection.events.create(eventData, function(err, event) {
         console.log('Event created:');
         console.dir(event);
