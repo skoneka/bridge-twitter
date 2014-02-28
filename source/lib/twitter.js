@@ -35,7 +35,7 @@ function streamUserTweets(user) {
     openedStreams[currentTwitterUsername].stream('user', condition, function (stream) {
       openedStreams[currentTwitterUsername].streamRef = stream;
       stream.on('data', function (data) {
-        if (data.event === 'favorite' || data.created_at) {
+        if (data.event === 'favorite' || data.text) {
           pryv.forwardTweet(user, data, function (err, createdEvent) {
             if (err) {
               return winston.warn(err);
