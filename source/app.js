@@ -29,7 +29,6 @@ app.configure('production', function () {
 });
 
 usersStorage.listUsers(function (users) {
-  console.log(users);
   twitter.streamTweetsFromExistingUsers(users);
 });
 
