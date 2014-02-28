@@ -1,9 +1,6 @@
 /*global describe, it, before, after*/
 
-var should = require('should'),
-    nock = require('nock'),
-    request = require('supertest'),
-    gateway = require('../source/lib/gateway'),
+var request = require('supertest'),
     usersStorage = require('../source/storage/users-storage'),
     app = require('../source/app'),
     JSV = require('JSV').JSV;

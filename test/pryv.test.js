@@ -58,19 +58,6 @@ var formatedData = [{
     screen_name: 'testuser2'
   }
 }];
-var wrongFormatedData = [{
-  ttempRefId: '0',
-  folderId: 'TPZZHj5YuM',
-  type: {
-    class: 'note',
-    format: 'twitter'
-  },
-  value: {
-    id: '291588476627976192',   // string ID to handle JS parsing problems
-    text: 'this is a test',
-    screen_name: 'xa4loz'
-  }
-}];
 
 describe('forwardTweet', function () {
   this.timeout(5000);
@@ -106,8 +93,16 @@ describe('forwardTweetsHistory', function () {
     }
   };
 
+  //ugly but jshint likes it like that
+  var data = '/TePRIdMlgf/events/batch [{' +
+          '"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note",' +
+          '"format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test",' +
+          '"screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1",' +
+          '"folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},' +
+          '"value":{"id":"291588476627976193","text":"this is another test",' +
+          '"screen_name":"testuser2"}}]';
   nock('https://jonmaim.pryv.in')
-    .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
+    .post(data)
     .reply(200, { '0': { id: 'eTaUhq6IgM' } }, {'Content-Type': 'application/json'});
 
   it('should send a batch of events to the activity server', function (done) {
@@ -117,20 +112,39 @@ describe('forwardTweetsHistory', function () {
     });
   });
 
+  data = '/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0",' +
+  '"folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},' +
+  '"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},' +
+  '{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note",' +
+  '"format":"twitter"},"value":{"id":"291588476627976193",' +
+  '"text":"this is another test","screen_name":"testuser2"}}]';
+
+  var message = 'The access token is missing: expected an "Authorization"' +
+                'header or an "auth" query string parameter.';
+
   nock('https://jonmaim.pryv.in')
-    .post('/TePRIdMlgf/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
-    .reply(200, { id: 'invalid-access-token', message: 'The access token is missing: expected an "Authorization" header or an "auth" query string parameter.' }, {'Content-Type': 'application/json'});
+    .post(data)
+    .reply(200, {
+      id: 'invalid-access-token',
+      message: message
+    }, {'Content-Type': 'application/json'});
 
   it('should report INVALID_ACCESS_TOKEN response', function (done) {
     pryv.sendFilteredData(pryvUser, formatedData, function (err, response) {
-      response.should.have.property('id', 'invalid-access-token')
+      response.should.have.property('id', 'invalid-access-token');
       done();
     });
   });
 
+  data = '/test/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM",' +
+  '"type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192",' +
+  '"text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1",' +
+  '"folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},' +
+  '"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]';
   nock('https://jonmaim.pryv.in')
-    .post('/test/events/batch [{"time":1358181371,"tempRefId":"0","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976192","text":"this is a test","screen_name":"testuser"}},{"time":1358181370,"tempRefId":"1","folderId":"TPZZHj5YuM","type":{"class":"note","format":"twitter"},"value":{"id":"291588476627976193","text":"this is another test","screen_name":"testuser2"}}]')
-    .reply(200, { id: 'unknown-channel', message: 'Cannot find channel "test".' }, {'Content-Type': 'application/json'});
+    .post(data)
+    .reply(200, { id: 'unknown-channel', message: 'Cannot find channel "test".' },
+      {'Content-Type': 'application/json'});
 
   it('should report UNKNOWN_CHANNEL response', function (done) {
     pryv.sendFilteredData(pryvUser2, formatedData, function (err, response) {

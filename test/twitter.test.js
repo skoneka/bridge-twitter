@@ -46,7 +46,7 @@ describe('Twitter api', function () {
     });
   });
 
-  it('should get user\'s timeline from Twitter', function(done) {
+  it('should get user\'s timeline from Twitter', function (done) {
 
     nock('https://api.twitter.com')
       .get('/1.1/statuses/user_timeline.json?screen_name=twitter-user&count=200&include_rts=1')

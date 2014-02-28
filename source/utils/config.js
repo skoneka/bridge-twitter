@@ -28,9 +28,9 @@ if (typeof(nconf.get('config')) !== 'undefined') {
 if (configFile) {
   if (fs.existsSync(configFile)) {
     configFile = fs.realpathSync(configFile);
-    logger.info('using custom config file: '+configFile);
+    logger.info('using custom config file: ' + configFile);
   } else {
-    logger.warn('Cannot find custom config file: '+configFile);
+    logger.warn('Cannot find custom config file: ' + configFile);
   }
   nconf.file({ file: configFile});
 }
