@@ -1,4 +1,4 @@
-module.exports = function(isRequired) {
+module.exports = function (isRequired) {
 	var schema = {
 		type : 'object',
 		additionalProperties : false,
@@ -17,19 +17,19 @@ module.exports = function(isRequired) {
 						type: 'array',
 						items: [{
 							type : 'object',
-					    	minItems : 0,
+							minItems : 0,
 							maxItems : 10,
 							properties : {
 								'accessToken': {
-									type:'string',
+									type: 'string',
 									required : isRequired === action.CREATE
 								},
 								'accessSecret': {
-									type:'string',
+									type: 'string',
 									required : isRequired === action.CREATE
 								},
 								'username': {
-									type:'string',
+									type: 'string',
 									required : isRequired === action.CREATE
 								}
 							}
@@ -55,6 +55,10 @@ module.exports = function(isRequired) {
 							},
 							'auth': {
 								type: 'string',
+								required : isRequired === action.CREATE
+							},
+							'isValid': {
+								type: 'boolean',
 								required : isRequired === action.CREATE
 							}
 						}

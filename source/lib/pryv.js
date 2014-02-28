@@ -4,6 +4,7 @@ var request = require('superagent'),
     Pryv = require('pryv'),
     domain = config.get('pryvdomain'),
     staging = config.get('pryvStaging'),
+    usersStorage = require('../storage/users-storage'),
     timestamp = require('unix-timestamp');
 
 /**
@@ -12,8 +13,6 @@ var request = require('superagent'),
  * @param {Function} done (err, event) Returns the Pryv event created if forwarded
  */
 exports.forwardTweet = function (user, data, done) {
-  console.log('DATA:');
-  console.dir(data);
   var tweet = {
     time: timestamp.fromDate(data.created_at),
     streamId: user.pryv.streamId,
@@ -21,7 +20,7 @@ exports.forwardTweet = function (user, data, done) {
   };
   if (data.event === 'favorite') {
     tweet.content = {
-      id: +data.target.id_str,
+      id: data.target.id_str,
       'screen-name': data.target.screen_name,
       text: data.target_object.text
     };
@@ -33,7 +32,7 @@ exports.forwardTweet = function (user, data, done) {
          data.text.indexOf(user.twitter.filter) !== -1) ||
         user.twitter.filterOption === 'all') {
       tweet.content = {
-        id: +data.id_str,
+        id: data.id_str,
         'screen-name': data.user.screen_name,
         text: data.text
       };
@@ -52,6 +51,21 @@ function sendTweet(user, tweet, done) {
   });
 
   connection.events.create(tweet, function (err, event) {
+    if (err.id === 'invalid-access-token') {
+      var condition = {'pryv.credentials.username': user.pryv.credentials.username};
+      var update = {'pryv': {'credentials': {
+        'auth': user.pryv.credentials.auth,
+        'username': user.pryv.credentials.username,
+        'isValid' : false
+      }}};
+      usersStorage.updateUser(condition, update, function (err) {
+        if (err) {
+          winston.warn(err);
+        } else {
+          winston.info('auth not valid, user info updated!');
+        }
+      });
+    }
     done(err, event || null);
   });
 }

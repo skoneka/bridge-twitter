@@ -9,7 +9,7 @@ module.exports.openedStreams = openedStreams;
 
 exports.streamTweetsFromExistingUsers = function (users) {
   for (var i = 0, len = users.length; i < len; i++) {
-    streamUserTweets(users[i]);
+    if (users[i].pryv.credentials.isValid) {streamUserTweets(users[i]); }
   }
 };
 
