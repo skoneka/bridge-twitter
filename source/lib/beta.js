@@ -60,7 +60,7 @@ exports.readPrefs = function (req, res) {
     if (!result) { return res.redirect('/'); }
     var instanceNum = 0;
     result.twitter.credentials.forEach(function (credential) {
-      if (credential.accessToken !== '') {
+      if (credential.accessToken !== '' && twitter.openedStreams[credential.username]) {
         ++instanceNum;
         twitter.openedStreams[credential.username].verifyCredentials(function (err) {
           --instanceNum;
