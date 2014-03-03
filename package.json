@@ -17,7 +17,8 @@
     "pryv": "0.1.x",
     "superagent": "0.12.x",
     "unix-timestamp": "0.1.x",
-    "winston": "0.6.x"
+    "winston": "0.6.x",
+    "pryv": "*"
   },
   "devDependencies": {
     "blanket": "latest",
