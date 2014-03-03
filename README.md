@@ -80,7 +80,7 @@ Provides the schema of the user settings. Currently it looks like this:
 	        "channelId": {
 	          "type": "string"
 	        },
-	        "folderId": {
+	        "streamId": {
 	          "type": "string"
 	        },
 	        "credentials": {
@@ -91,6 +91,9 @@ Provides the schema of the user settings. Currently it looks like this:
 	            },
 	            "auth": {
 	              "type": "string"
+	            },
+	            "isValid": {
+	              "type": "boolean"
 	            }
 	          }
 	        }
@@ -142,11 +145,12 @@ For example, to insert a new user, this json must be provided:
         }
       },
       "pryv": {
-        "channelId": "channelID-string",
-        "folderId": "folderId-string",
+        "channelId": "channelId-string",
+        "streamId": "streamId-string",
         "credentials": {
           "auth": "auth-string",
-          "username": "pryv-username"
+          "username": "pryv-username",
+          "isValid": true
         }
       }
     }
