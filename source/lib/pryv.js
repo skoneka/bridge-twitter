@@ -51,7 +51,7 @@ function sendTweet(user, tweet, done) {
   });
 
   connection.events.create(tweet, function (err, event) {
-    if (err.id === 'invalid-access-token') {
+    if (err && err.id === 'invalid-access-token') {
       var condition = {'pryv.credentials.username': user.pryv.credentials.username};
       var update = {'pryv': {'credentials': {
         'auth': user.pryv.credentials.auth,
