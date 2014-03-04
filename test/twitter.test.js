@@ -27,7 +27,8 @@ describe('Twitter api', function () {
         'streamId': 'social-twitter',
         'credentials': {
           'auth': 'auth-string',
-          'username': 'pryv-user'
+          'username': 'pryv-user',
+          isValid: true
         }
       }
     };
@@ -65,6 +66,7 @@ describe('Twitter api', function () {
 
     twitter.getUserTimeline('pryv-user', 'twitter-user', function (err, data) {
       should.exist(data);
+      /*jshint -W030*/
       data.should.not.be.empty;
       done();
     });
@@ -73,6 +75,7 @@ describe('Twitter api', function () {
   it('should format user\'s timeline according to pryv\'s api', function (done) {
     twitter.formatUserTimeline(user, data, function (undefined, tweetsHistory) {
       should.exist(tweetsHistory);
+      /*jshint -W030*/
       tweetsHistory.should.not.be.empty;
       done();
     });

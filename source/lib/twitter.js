@@ -15,14 +15,15 @@ exports.streamTweetsFromExistingUsers = function (users) {
 
 function streamUserTweets(user) {
   //TODO: don't declare functions in loops
-  for (var i = 0; i < user.twitter.credentials.length; i++) {
-    if (user.twitter.credentials[i].accessToken === '') { continue; }
-    var currentTwitterUsername = user.twitter.credentials[i].username;
+  var currentTwitterUsername;
+  for (var i = 0, len = user.twitter.credentials.length; i < len; i++) {
+    if (! user.twitter.credentials[i].accessToken) { continue; }
 
-    //if the stream was already opened, kill it and remove its reference
-    if (typeof openedStreams[currentTwitterUsername] !== 'undefined') {
+    currentTwitterUsername = user.twitter.credentials[i].username;
+
+    //if the stream was already opened, kill it
+    if (openedStreams[currentTwitterUsername]) {
       openedStreams[currentTwitterUsername].streamRef.destroy();
-      delete openedStreams[currentTwitterUsername];
     }
 
     openedStreams[currentTwitterUsername] = new twitter({
@@ -32,22 +33,29 @@ function streamUserTweets(user) {
       access_token_secret: user.twitter.credentials[i].accessSecret
     });
     var condition = {track: user.twitter.credentials[i].username};
-    openedStreams[currentTwitterUsername].stream('user', condition, function (stream) {
-      openedStreams[currentTwitterUsername].streamRef = stream;
-      stream.on('data', function (data) {
-        if (data.event === 'favorite' || data.text) {
-          pryv.forwardTweet(user, data, function (err, createdEvent) {
-            if (err) {
-              return winston.warn(err);
-            }
-            winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
-          });
+    openedStreams[currentTwitterUsername].stream('user', condition,
+        onStreamOpen.bind(null, currentTwitterUsername));
+  }
+
+  function onStreamOpen(twitterUsername, stream) {
+    openedStreams[twitterUsername].streamRef = stream;
+    stream.on('data', onStreamData);
+    stream.on('error', onStreamError);
+  }
+
+  function onStreamData(data) {
+    if (data.event === 'favorite' || data.text) {
+      pryv.forwardTweet(user, data, function (err, createdEvent) {
+        if (err) {
+          return winston.warn(err);
         }
+        winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
       });
-      stream.on('error', function (error, code) {
-        winston.error(error + ': ' + code);
-      });
-    });
+    }
+  }
+
+  function onStreamError(error, code) {
+    winston.error(error + ': ' + code);
   }
 }
 module.exports.streamUserTweets = streamUserTweets;

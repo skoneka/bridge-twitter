@@ -10,7 +10,8 @@ var userSettingsData = {
     pryv: {
       credentials: {
         username: 'pryv_user',
-        auth: 'auth_string'
+        auth: 'auth_string',
+        isValid: true
       },
       streamId: 'social-twitter'
     },
