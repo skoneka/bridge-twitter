@@ -2,7 +2,8 @@ var twitter = require('ntwitter'),
     usersStorage = require('../storage/users-storage'),
     config = require('../utils/config'),
     pryv = require('./pryv'),
-    winston = require('winston');
+    winston = require('winston'),
+    timestamp = require('unix-timestamp');
 
 var openedStreams = {};
 module.exports.openedStreams = openedStreams;
@@ -145,8 +146,7 @@ function formatUserTimeline(user, data, next, done) {
   for (var i = 0, len = data.length; i < len; i++) {
     var currentTweet = data[i];
     var tweet = {
-      time: pryv.toTimestamp(currentTweet.created_at),
-      tempRefId: i.toString(),
+      time: timestamp.fromDate(currentTweet.created_at),
       streamId: user.pryv.streamId,
       type: 'message/twitter',
       content: {

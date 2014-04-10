@@ -8,7 +8,7 @@
             url: '/user-timeline/<%=data.username %>/'+account
         }).done(function(data){
             console.log("done importing");
-            $("#"+account).html(Object.keys(data).length+' tweets successfuly imported');
+            $("#"+account).html(data.eventsForwarded+' tweets successfuly imported');
             console.dir(data);
         });
         return false;
@@ -56,8 +56,8 @@
         if (credential.accessToken !== '') {%>
       <form class="well">
         Pryv is connected to the Twitter account <b><%= credential.username %></b>. New tweets will automatically be added to your Pryv based on your preferences.
-        <!--<br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
-        <div id="<%= credential.username %>"></div>-->
+        <br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
+        <div id="<%= credential.username %>"></div>
       </form>
       <% }}) %>
 

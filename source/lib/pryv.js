@@ -1,7 +1,7 @@
 var request = require('superagent'),
     winston = require('winston'),
     config = require('../utils/config'),
-    Pryv = require('pryv'),
+    pryv = require('pryv'),
     domain = config.get('pryvdomain'),
     staging = config.get('pryvStaging'),
     usersStorage = require('../storage/users-storage'),
@@ -44,7 +44,7 @@ exports.forwardTweet = function (user, data, done) {
 };
 
 function sendTweet(user, tweet, done) {
-  var connection = new Pryv.Connection({
+  var connection = new pryv.Connection({
     username: user.pryv.credentials.username,
     auth: user.pryv.credentials.auth,
     staging: staging
@@ -76,39 +76,57 @@ exports.forwardTweetsHistory = function (user, data, done) {
 };
 
 
-function sendFilteredData(user, data, done) {
-  request
-  .post('https://' + user.credentials.username + '.' +
-    domain + ':443/events/batch')
-  .set('Authorization', user.credentials.auth)
-  .send(data)
-  .on('error', function (err) { winston.error(err); })
-  .end(function (res) {
-    if (res.ok) {
-      done(undefined, res.body);
-    }
+function sendFilteredData(user, remainingStuff, done) {
+  var settings = {
+    username: user.credentials.username,
+    auth: user.credentials.auth,
+    staging: staging
+  };
+  var connection = new pryv.Connection(settings);
+
+  connection.events.batchWithData(remainingStuff, function (err, events) {
+    if (err) { winston.error(err); }
+    winston.info(events.length + ' event(s) successfully created on pryv');
+    done(err, {eventsForwarded: events.length} || {eventsForwarded: 0});
   });
+
+
+
 }
 module.exports.sendFilteredData = sendFilteredData;
 
 function removeDuplicateEvents(user, data, next, done) {
   var dataArray = JSON.parse(data);
-  request
-    .get('https://' + user.credentials.username + '.' + domain + ':443/events?fromTime=' +
-          dataArray[dataArray.length - 1].time + '&toTime=' + (dataArray[0].time + 1))
-    .set('Authorization', user.credentials.auth)
-    .on('error', function (err) { winston.error(err); })
-    .end(function (res) {
-      if (res.ok) {
-        for (var i = 0; i < res.body.length; i++) {
-          for (var j = 0, arrlen = dataArray.length; j < arrlen; j++) {
-            if (typeof dataArray[j] !== 'undefined' && res.body[i].time === dataArray[j].time) {
-              dataArray = dataArray.slice(0, j).concat(dataArray.slice(j + 1, arrlen));
-            }
-          }
+  var settings = {
+    username: user.credentials.username,
+    auth: user.credentials.auth,
+    staging: staging
+  };
+  var connection = new pryv.Connection(settings);
+  var params = {
+    fromTime:   dataArray[dataArray.length - 1].time,
+    toTime:     dataArray[0].time + 1,
+    streams:    ['social-twitter'] 
+  };
+  connection.events.get(params, function (err, events) {
+    if (err) {
+      winston.error('failed to fetch data: ' + err);
+      return done(null);
+    }
+    winston.info('comparing ' + events.length +
+      ' events with ' + dataArray.length +
+      ' events to be sent');
+
+    for (var i = 0; i < events.length; i++) {
+      var arrlen = dataArray.length;
+      for (var j = 0; j < arrlen; j++) {
+        if (typeof dataArray[j] !== 'undefined' && events[i].time === dataArray[j].time) {
+          dataArray = dataArray.slice(0, j).concat(dataArray.slice(j + 1, arrlen));
         }
-        next(user, dataArray, done);
       }
-    });
+    }
+    next(user, dataArray, done);
+  });
+
 }
 module.exports.removeDuplicateEvents = removeDuplicateEvents;
