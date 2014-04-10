@@ -47,9 +47,11 @@ function streamUserTweets(user) {
     if (data.event === 'favorite' || data.text) {
       pryv.forwardTweet(user, data, function (err, createdEvent) {
         if (err) {
-          return winston.warn(err);
+          return winston.error(err);
         }
-        winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
+        if (createdEvent) {
+          winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
+        }
       });
     }
   }
@@ -136,10 +138,7 @@ function getUserTimeline(username, account, next, done) {
 }
 module.exports.getUserTimeline = getUserTimeline;
 
-
 function formatUserTimeline(user, data, next, done) {
-
-  console.dir(data);
 
   var tweetsHistory = [];
 

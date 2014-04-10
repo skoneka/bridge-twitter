@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 10px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
       #pryvButton{
         position:absolute;
@@ -45,13 +45,17 @@
             console.log("** SUCCESS! username:" + username +
                         " appToken:" + appToken +
                         " lang:" + languageCode);
-            window.location = "/beta?appToken="+appToken+"&username="+username;
+            window.location = "/prefs?appToken="+appToken+"&username="+username;
           },
           refused: function(reason) {
             console.log("** REFUSED! " + reason);
           },
           error: function(code, message) {
             console.log("** ERROR! " + code + " " + message);
+          },
+          signedOut: function (code, message) {
+            console.log('** Signed Out ! ' + code + ' ' + message);
+            window.location = '/signOut';
           }
         }
       };
@@ -60,28 +64,6 @@
     pryv.Auth.config.registerURL = pryv.Auth.config.registerStagingURL;
     pryv.Auth.setup(settings);
     </script>
-
-
-    <!-- Fixed navbar -->
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Pryv: Twitter integration</a>
-        </div>
-        <div class="navbar-collapse collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="/prefs">Preferences</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </div>
 
     <div class="container">
       <span id="pryvButton"></span>

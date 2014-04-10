@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 10px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
       #pryvButton{
         position:absolute;
@@ -54,6 +54,10 @@
           },
           error: function(code, message) {
             console.log("** ERROR! " + code + " " + message);
+          },
+          signedOut: function (code, message) {
+            console.log('** Signed Out ! ' + code + ' ' + message);
+            window.location = '/signOut';
           }
         }
       };
