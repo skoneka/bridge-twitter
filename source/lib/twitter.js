@@ -69,7 +69,6 @@ exports.transferUserTimeline = function (username, account, done) {
 };
 
 function getUserTimeline(username, account, next, done) {
-
   var data = [];
   getUserData(username.toLowerCase(), function (user) {
     if (!user) { return done('user not found', data); }

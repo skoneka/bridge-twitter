@@ -13,48 +13,6 @@ var usersStorage = require('../storage/users-storage'),
       'HMAC-SHA1'
     );
 
-// exports.createUser = function (req, res) {
-//   if (typeof(req.query.username) !== 'undefined') { req.session.username = req.query.username; }
-//   if (typeof(req.query.appToken) !== 'undefined') { req.session.appToken = req.query.appToken; }
-
-// 	usersStorage.readUser({'pryv.credentials.username': req.query.username}, function (result) {
-//     if (!result) {
-//       var user = {
-//         'twitter': {
-//           'filter': '+Y',
-//           'filterOption': 'all',
-//           'credentials': [{
-//             'accessToken': '',
-//             'accessSecret': '',
-//             'username': ''
-//           }]
-//         },
-//         'pryv': {
-//           'streamId': 'social-twitter',
-//           'credentials': {
-//             'auth': req.session.appToken,
-//             'username': req.session.username,
-//             'isValid': true
-//           }
-//         }
-//       };
-//       usersStorage.createUser(user, function (err, result) {
-//         twitter.streamUserTweets(user);
-//         res.render('beta', {data: req.session, result: result, domain: config.get('pryvdomain')});
-//       });
-//     } else {
-//       var condition = {'pryv.credentials.username': req.session.username};
-//       var update = {'pryv': {'credentials': {
-//         'auth': req.session.appToken,
-//         'username': req.session.username
-//       }}};
-//       usersStorage.updateUser(condition, update, function (err, result) {
-//         res.render('beta', {data: req.session, result: result, domain: config.get('pryvdomain')});
-//       });
-//     }
-//   });
-// };
-
 exports.readPrefs = function (req, res) {
 
   //User not logged in
@@ -69,21 +27,21 @@ exports.readPrefs = function (req, res) {
   }
 
   usersStorage.readUser({'pryv.credentials.username': req.session.username}, function (result) {
-    
     // user hasn't been created in the db yet
     if (!result) {
-      winston.info('creating user in db...');
+      winston.info('user not found, creating user in db...');
       var user = {
         'twitter': {
           'credentials': [{
             'accessToken': '',
             'accessSecret': '',
             'username': ''
-          }]
+          }],
+          'filter': '+Y',
+          'filterOption': 'all'
         },
         'pryv': {
-          'channelId': 'diary',
-          'folderId': 'social-twitter',
+          'streamId': 'social-twitter',
           'credentials': {
             'auth': req.session.appToken,
             'username': req.session.username,

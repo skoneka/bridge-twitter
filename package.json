@@ -25,7 +25,8 @@
     "mocha": "latest",
     "nock": "latest",
     "should": "latest",
-    "supertest": "latest"
+    "supertest": "latest",
+    "replay": "1.*"
   },
   "scripts":{
     "blanket":{"pattern": "/twitter-gateway/source/"}

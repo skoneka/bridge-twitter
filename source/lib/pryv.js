@@ -106,7 +106,7 @@ function removeDuplicateEvents(user, data, next, done) {
   var params = {
     fromTime:   dataArray[dataArray.length - 1].time,
     toTime:     dataArray[0].time + 1,
-    streams:    ['social-twitter'] 
+    streams:    ['social-twitter']
   };
   connection.events.get(params, function (err, events) {
     if (err) {
