@@ -82,6 +82,7 @@ function sendFilteredData(user, remainingStuff, done) {
     auth: user.credentials.auth,
     staging: staging
   };
+
   var connection = new pryv.Connection(settings);
 
   connection.events.batchWithData(remainingStuff, function (err, events) {

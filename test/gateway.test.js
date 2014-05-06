@@ -1,9 +1,12 @@
 /*global describe, it, before, after*/
 
-var request = require('supertest'),
+var should = require('should'),
+    request = require('supertest'),
     usersStorage = require('../source/storage/users-storage'),
     app = require('../source/app'),
     JSV = require('JSV').JSV;
+
+require('./support').setupReplay('bloody');
 
 var userSettingsData = {
   user: {
