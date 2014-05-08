@@ -1,37 +1,45 @@
 /*global describe, it, before, after*/
 
 var should = require('should'),
-    nock = require('nock'),
     usersStorage = require('../source/storage/users-storage'),
+    replay = require('replay'),
     twitter = require('../source/lib/twitter');
 
 describe('Twitter api', function () {
-  this.timeout(5000);
+  this.timeout(10000);
 
   var user = {},
       data = {},
       id;
 
   before(function (done) {
+    replay.mode = 'record';
     user = {
       'twitter': {
         'filter': '+Y',
         'filterIsActive': 'true',
         'credentials': [{
-          'accessToken': 'atk-string',
-          'accessSecret': 'ats-string',
-          'username': 'twitter-user'
+          'accessToken': '14094276-HKFyUmp59SrDq722FrWkog0J0dIrMTJFyfUU4uyhh',
+          'accessSecret': '0LTUZ2Mezu2uLxU89S88hGT5gSQ783PXgov1pfdgGXptx',
+          'username': 'xa4loz'
         }]
       },
       'pryv': {
         'streamId': 'social-twitter',
         'credentials': {
-          'auth': 'auth-string',
-          'username': 'pryv-user',
+          'auth': 'VPoFEsuJRM',
+          'username': 'perkikiki',
           isValid: true
         }
       }
     };
+    after(function (done) {
+      replay.mode = 'bloody';
+      usersStorage.deleteUser({_id: id}, function (result) {
+        result.should.have.property('ok');
+        done();
+      });
+    });
     usersStorage.createUser(user, function (err, result) {
       result.should.have.property('ok');
       id = result.ok;
@@ -40,31 +48,15 @@ describe('Twitter api', function () {
   });
 
   it('should get user\'s info', function (done) {
-    twitter.getUserData('pryv-user', function () {
-      //TODO: what does this test do??
+    twitter.getUserData('perkikiki', function () {
       should.exist(user);
       done();
     });
   });
 
   it('should get user\'s timeline from Twitter', function (done) {
-
-    nock('https://api.twitter.com')
-      .get('/1.1/statuses/user_timeline.json?screen_name=twitter-user&count=200&include_rts=1')
-      .reply(200,
-        [{ created_at: 'Mon Jan 14 14:36:57 +0000 2013',
-        id: 290829865081516000,
-        id_str: '290829865081516032',
-        text: 'this is a status update +Y',
-        user:
-         { id: 1079604163,
-           id_str: '1079604163',
-           name: 'JC Dusse',
-           screen_name: 'JCDusse4'
-         }
-        }]);
-
-    twitter.getUserTimeline('pryv-user', 'twitter-user', function (err, data) {
+    // twitter.getUserTimeline('perkikiki', 'xa4loz', formatUserTimeline, done);
+    twitter.getUserTimeline('perkikiki', 'xa4loz', function (err, data) {
       should.exist(data);
       /*jshint -W030*/
       data.should.not.be.empty;
@@ -90,12 +82,5 @@ describe('Twitter api', function () {
     //   done();
     // });
     done();
-  });
-
-  after(function (done) {
-    usersStorage.deleteUser({_id: id}, function (result) {
-      result.should.have.property('ok');
-      done();
-    });
   });
 });
