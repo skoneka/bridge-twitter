@@ -64,7 +64,7 @@ nconf.defaults({
     }
   },
   twitter: {
-    callbackBaseURL: 'https://openhardware.ch:3000',
+    callbackBaseURL: 'https://188.226.158.177:3000',
     consumerKey: 's4iHUFq1lumSStZa0JEw',
     consumerSecret: 'OFkYVjdqZPNnSNEx8jlhJQ9PqDfw8GBnBupn8tKhI'
   }

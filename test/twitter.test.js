@@ -1,8 +1,8 @@
 /*global describe, it, before, after*/
 
 var should = require('should'),
+    nock = require('nock'),
     usersStorage = require('../source/storage/users-storage'),
-    replay = require('replay'),
     twitter = require('../source/lib/twitter');
 
 describe('Twitter api', function () {
@@ -13,7 +13,6 @@ describe('Twitter api', function () {
       id;
 
   before(function (done) {
-    replay.mode = 'record';
     user = {
       'twitter': {
         'filter': '+Y',
@@ -33,16 +32,16 @@ describe('Twitter api', function () {
         }
       }
     };
-    after(function (done) {
-      replay.mode = 'bloody';
-      usersStorage.deleteUser({_id: id}, function (result) {
-        result.should.have.property('ok');
-        done();
-      });
-    });
     usersStorage.createUser(user, function (err, result) {
       result.should.have.property('ok');
       id = result.ok;
+      done();
+    });
+  });
+
+  after(function (done) {
+    usersStorage.deleteUser({_id: id}, function (result) {
+      result.should.have.property('ok');
       done();
     });
   });
@@ -53,6 +52,10 @@ describe('Twitter api', function () {
       done();
     });
   });
+
+  nock('http://api.twitter.com:443')
+  .get('/1.1/statuses/user_timeline.json?screen_name=xa4loz&count=200&include_rts=1')
+  .reply(200, [{'created_at':'Tue May 06 09:17:04 +0000 2014','id':463608374710792200}]);
 
   it('should get user\'s timeline from Twitter', function (done) {
     // twitter.getUserTimeline('perkikiki', 'xa4loz', formatUserTimeline, done);

@@ -6,8 +6,6 @@ var should = require('should'),
     app = require('../source/app'),
     JSV = require('JSV').JSV;
 
-require('./support').setupReplay('bloody');
-
 var userSettingsData = {
   user: {
     pryv: {
