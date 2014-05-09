@@ -1,6 +1,683 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.pryv=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 
 },{}],2:[function(_dereq_,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],3:[function(_dereq_,module,exports){
+// shim for using process in browser
+
+var process = module.exports = {};
+
+process.nextTick = (function () {
+    var canSetImmediate = typeof window !== 'undefined'
+    && window.setImmediate;
+    var canPost = typeof window !== 'undefined'
+    && window.postMessage && window.addEventListener
+    ;
+
+    if (canSetImmediate) {
+        return function (f) { return window.setImmediate(f) };
+    }
+
+    if (canPost) {
+        var queue = [];
+        window.addEventListener('message', function (ev) {
+            var source = ev.source;
+            if ((source === window || source === null) && ev.data === 'process-tick') {
+                ev.stopPropagation();
+                if (queue.length > 0) {
+                    var fn = queue.shift();
+                    fn();
+                }
+            }
+        }, true);
+
+        return function nextTick(fn) {
+            queue.push(fn);
+            window.postMessage('process-tick', '*');
+        };
+    }
+
+    return function nextTick(fn) {
+        setTimeout(fn, 0);
+    };
+})();
+
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+}
+
+// TODO(shtylman)
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+
+},{}],4:[function(_dereq_,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],5:[function(_dereq_,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = _dereq_('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = _dereq_('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,_dereq_("/Users/sim/Dropbox/Projets/Pryv/2012-Pryv/dev/lib-javascript/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"),typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./support/isBuffer":4,"/Users/sim/Dropbox/Projets/Pryv/2012-Pryv/dev/lib-javascript/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":3,"inherits":2}],6:[function(_dereq_,module,exports){
 /*! Socket.IO.js build:0.9.16, development. Copyright(c) 2011 LearnBoost <dev@learnboost.com> MIT Licensed */
 
 var io = ('undefined' === typeof module ? {} : module.exports);
@@ -3874,10 +4551,10 @@ if (typeof define === "function" && define.amd) {
   define([], function () { return io; });
 }
 })();
-},{}],3:[function(_dereq_,module,exports){
-//     Underscore.js 1.5.2
+},{}],7:[function(_dereq_,module,exports){
+//     Underscore.js 1.6.0
 //     http://underscorejs.org
-//     (c) 2009-2013 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     (c) 2009-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Underscore may be freely distributed under the MIT license.
 
 (function() {
@@ -3942,7 +4619,7 @@ if (typeof define === "function" && define.amd) {
   }
 
   // Current version.
-  _.VERSION = '1.5.2';
+  _.VERSION = '1.6.0';
 
   // Collection Functions
   // --------------------
@@ -3951,7 +4628,7 @@ if (typeof define === "function" && define.amd) {
   // Handles objects with the built-in `forEach`, arrays, and raw objects.
   // Delegates to **ECMAScript 5**'s native `forEach` if available.
   var each = _.each = _.forEach = function(obj, iterator, context) {
-    if (obj == null) return;
+    if (obj == null) return obj;
     if (nativeForEach && obj.forEach === nativeForEach) {
       obj.forEach(iterator, context);
     } else if (obj.length === +obj.length) {
@@ -3964,6 +4641,7 @@ if (typeof define === "function" && define.amd) {
         if (iterator.call(context, obj[keys[i]], keys[i], obj) === breaker) return;
       }
     }
+    return obj;
   };
 
   // Return the results of applying the iterator to each element.
@@ -4029,10 +4707,10 @@ if (typeof define === "function" && define.amd) {
   };
 
   // Return the first value which passes a truth test. Aliased as `detect`.
-  _.find = _.detect = function(obj, iterator, context) {
+  _.find = _.detect = function(obj, predicate, context) {
     var result;
     any(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) {
+      if (predicate.call(context, value, index, list)) {
         result = value;
         return true;
       }
@@ -4043,33 +4721,33 @@ if (typeof define === "function" && define.amd) {
   // Return all the elements that pass a truth test.
   // Delegates to **ECMAScript 5**'s native `filter` if available.
   // Aliased as `select`.
-  _.filter = _.select = function(obj, iterator, context) {
+  _.filter = _.select = function(obj, predicate, context) {
     var results = [];
     if (obj == null) return results;
-    if (nativeFilter && obj.filter === nativeFilter) return obj.filter(iterator, context);
+    if (nativeFilter && obj.filter === nativeFilter) return obj.filter(predicate, context);
     each(obj, function(value, index, list) {
-      if (iterator.call(context, value, index, list)) results.push(value);
+      if (predicate.call(context, value, index, list)) results.push(value);
     });
     return results;
   };
 
   // Return all the elements for which a truth test fails.
-  _.reject = function(obj, iterator, context) {
+  _.reject = function(obj, predicate, context) {
     return _.filter(obj, function(value, index, list) {
-      return !iterator.call(context, value, index, list);
+      return !predicate.call(context, value, index, list);
     }, context);
   };
 
   // Determine whether all of the elements match a truth test.
   // Delegates to **ECMAScript 5**'s native `every` if available.
   // Aliased as `all`.
-  _.every = _.all = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
+  _.every = _.all = function(obj, predicate, context) {
+    predicate || (predicate = _.identity);
     var result = true;
     if (obj == null) return result;
-    if (nativeEvery && obj.every === nativeEvery) return obj.every(iterator, context);
+    if (nativeEvery && obj.every === nativeEvery) return obj.every(predicate, context);
     each(obj, function(value, index, list) {
-      if (!(result = result && iterator.call(context, value, index, list))) return breaker;
+      if (!(result = result && predicate.call(context, value, index, list))) return breaker;
     });
     return !!result;
   };
@@ -4077,13 +4755,13 @@ if (typeof define === "function" && define.amd) {
   // Determine if at least one element in the object matches a truth test.
   // Delegates to **ECMAScript 5**'s native `some` if available.
   // Aliased as `any`.
-  var any = _.some = _.any = function(obj, iterator, context) {
-    iterator || (iterator = _.identity);
+  var any = _.some = _.any = function(obj, predicate, context) {
+    predicate || (predicate = _.identity);
     var result = false;
     if (obj == null) return result;
-    if (nativeSome && obj.some === nativeSome) return obj.some(iterator, context);
+    if (nativeSome && obj.some === nativeSome) return obj.some(predicate, context);
     each(obj, function(value, index, list) {
-      if (result || (result = iterator.call(context, value, index, list))) return breaker;
+      if (result || (result = predicate.call(context, value, index, list))) return breaker;
     });
     return !!result;
   };
@@ -4109,25 +4787,19 @@ if (typeof define === "function" && define.amd) {
 
   // Convenience version of a common use case of `map`: fetching a property.
   _.pluck = function(obj, key) {
-    return _.map(obj, function(value){ return value[key]; });
+    return _.map(obj, _.property(key));
   };
 
   // Convenience version of a common use case of `filter`: selecting only objects
   // containing specific `key:value` pairs.
-  _.where = function(obj, attrs, first) {
-    if (_.isEmpty(attrs)) return first ? void 0 : [];
-    return _[first ? 'find' : 'filter'](obj, function(value) {
-      for (var key in attrs) {
-        if (attrs[key] !== value[key]) return false;
-      }
-      return true;
-    });
+  _.where = function(obj, attrs) {
+    return _.filter(obj, _.matches(attrs));
   };
 
   // Convenience version of a common use case of `find`: getting the first object
   // containing specific `key:value` pairs.
   _.findWhere = function(obj, attrs) {
-    return _.where(obj, attrs, true);
+    return _.find(obj, _.matches(attrs));
   };
 
   // Return the maximum element or (element-based computation).
@@ -4137,13 +4809,15 @@ if (typeof define === "function" && define.amd) {
     if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
       return Math.max.apply(Math, obj);
     }
-    if (!iterator && _.isEmpty(obj)) return -Infinity;
-    var result = {computed : -Infinity, value: -Infinity};
+    var result = -Infinity, lastComputed = -Infinity;
     each(obj, function(value, index, list) {
       var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed > result.computed && (result = {value : value, computed : computed});
+      if (computed > lastComputed) {
+        result = value;
+        lastComputed = computed;
+      }
     });
-    return result.value;
+    return result;
   };
 
   // Return the minimum element (or element-based computation).
@@ -4151,16 +4825,18 @@ if (typeof define === "function" && define.amd) {
     if (!iterator && _.isArray(obj) && obj[0] === +obj[0] && obj.length < 65535) {
       return Math.min.apply(Math, obj);
     }
-    if (!iterator && _.isEmpty(obj)) return Infinity;
-    var result = {computed : Infinity, value: Infinity};
+    var result = Infinity, lastComputed = Infinity;
     each(obj, function(value, index, list) {
       var computed = iterator ? iterator.call(context, value, index, list) : value;
-      computed < result.computed && (result = {value : value, computed : computed});
+      if (computed < lastComputed) {
+        result = value;
+        lastComputed = computed;
+      }
     });
-    return result.value;
+    return result;
   };
 
-  // Shuffle an array, using the modern version of the 
+  // Shuffle an array, using the modern version of the
   // [Fisher-Yates shuffle](http://en.wikipedia.org/wiki/Fisher–Yates_shuffle).
   _.shuffle = function(obj) {
     var rand;
@@ -4174,11 +4850,12 @@ if (typeof define === "function" && define.amd) {
     return shuffled;
   };
 
-  // Sample **n** random values from an array.
-  // If **n** is not specified, returns a single random element from the array.
+  // Sample **n** random values from a collection.
+  // If **n** is not specified, returns a single random element.
   // The internal `guard` argument allows it to work with `map`.
   _.sample = function(obj, n, guard) {
-    if (arguments.length < 2 || guard) {
+    if (n == null || guard) {
+      if (obj.length !== +obj.length) obj = _.values(obj);
       return obj[_.random(obj.length - 1)];
     }
     return _.shuffle(obj).slice(0, Math.max(0, n));
@@ -4186,12 +4863,14 @@ if (typeof define === "function" && define.amd) {
 
   // An internal function to generate lookup iterators.
   var lookupIterator = function(value) {
-    return _.isFunction(value) ? value : function(obj){ return obj[value]; };
+    if (value == null) return _.identity;
+    if (_.isFunction(value)) return value;
+    return _.property(value);
   };
 
   // Sort the object's values by a criterion produced by an iterator.
-  _.sortBy = function(obj, value, context) {
-    var iterator = lookupIterator(value);
+  _.sortBy = function(obj, iterator, context) {
+    iterator = lookupIterator(iterator);
     return _.pluck(_.map(obj, function(value, index, list) {
       return {
         value: value,
@@ -4211,9 +4890,9 @@ if (typeof define === "function" && define.amd) {
 
   // An internal function used for aggregate "group by" operations.
   var group = function(behavior) {
-    return function(obj, value, context) {
+    return function(obj, iterator, context) {
       var result = {};
-      var iterator = value == null ? _.identity : lookupIterator(value);
+      iterator = lookupIterator(iterator);
       each(obj, function(value, index) {
         var key = iterator.call(context, value, index, obj);
         behavior(result, key, value);
@@ -4225,7 +4904,7 @@ if (typeof define === "function" && define.amd) {
   // Groups the object's values by a criterion. Pass either a string attribute
   // to group by, or a function that returns the criterion.
   _.groupBy = group(function(result, key, value) {
-    (_.has(result, key) ? result[key] : (result[key] = [])).push(value);
+    _.has(result, key) ? result[key].push(value) : result[key] = [value];
   });
 
   // Indexes the object's values by a criterion, similar to `groupBy`, but for
@@ -4244,7 +4923,7 @@ if (typeof define === "function" && define.amd) {
   // Use a comparator function to figure out the smallest index at which
   // an object should be inserted so as to maintain order. Uses binary search.
   _.sortedIndex = function(array, obj, iterator, context) {
-    iterator = iterator == null ? _.identity : lookupIterator(iterator);
+    iterator = lookupIterator(iterator);
     var value = iterator.call(context, obj);
     var low = 0, high = array.length;
     while (low < high) {
@@ -4276,7 +4955,9 @@ if (typeof define === "function" && define.amd) {
   // allows it to work with `_.map`.
   _.first = _.head = _.take = function(array, n, guard) {
     if (array == null) return void 0;
-    return (n == null) || guard ? array[0] : slice.call(array, 0, n);
+    if ((n == null) || guard) return array[0];
+    if (n < 0) return [];
+    return slice.call(array, 0, n);
   };
 
   // Returns everything but the last entry of the array. Especially useful on
@@ -4291,11 +4972,8 @@ if (typeof define === "function" && define.amd) {
   // values in the array. The **guard** check allows it to work with `_.map`.
   _.last = function(array, n, guard) {
     if (array == null) return void 0;
-    if ((n == null) || guard) {
-      return array[array.length - 1];
-    } else {
-      return slice.call(array, Math.max(array.length - n, 0));
-    }
+    if ((n == null) || guard) return array[array.length - 1];
+    return slice.call(array, Math.max(array.length - n, 0));
   };
 
   // Returns everything but the first entry of the array. Aliased as `tail` and `drop`.
@@ -4336,6 +5014,16 @@ if (typeof define === "function" && define.amd) {
     return _.difference(array, slice.call(arguments, 1));
   };
 
+  // Split an array into two arrays: one whose elements all satisfy the given
+  // predicate, and one whose elements all do not satisfy the predicate.
+  _.partition = function(array, predicate) {
+    var pass = [], fail = [];
+    each(array, function(elem) {
+      (predicate(elem) ? pass : fail).push(elem);
+    });
+    return [pass, fail];
+  };
+
   // Produce a duplicate-free version of the array. If the array has already
   // been sorted, you have the option of using a faster algorithm.
   // Aliased as `unique`.
@@ -4369,7 +5057,7 @@ if (typeof define === "function" && define.amd) {
     var rest = slice.call(arguments, 1);
     return _.filter(_.uniq(array), function(item) {
       return _.every(rest, function(other) {
-        return _.indexOf(other, item) >= 0;
+        return _.contains(other, item);
       });
     });
   };
@@ -4384,7 +5072,7 @@ if (typeof define === "function" && define.amd) {
   // Zip together multiple lists into a single array -- elements that share
   // an index go together.
   _.zip = function() {
-    var length = _.max(_.pluck(arguments, "length").concat(0));
+    var length = _.max(_.pluck(arguments, 'length').concat(0));
     var results = new Array(length);
     for (var i = 0; i < length; i++) {
       results[i] = _.pluck(arguments, '' + i);
@@ -4490,19 +5178,27 @@ if (typeof define === "function" && define.amd) {
   };
 
   // Partially apply a function by creating a version that has had some of its
-  // arguments pre-filled, without changing its dynamic `this` context.
+  // arguments pre-filled, without changing its dynamic `this` context. _ acts
+  // as a placeholder, allowing any combination of arguments to be pre-filled.
   _.partial = function(func) {
-    var args = slice.call(arguments, 1);
+    var boundArgs = slice.call(arguments, 1);
     return function() {
-      return func.apply(this, args.concat(slice.call(arguments)));
+      var position = 0;
+      var args = boundArgs.slice();
+      for (var i = 0, length = args.length; i < length; i++) {
+        if (args[i] === _) args[i] = arguments[position++];
+      }
+      while (position < arguments.length) args.push(arguments[position++]);
+      return func.apply(this, args);
     };
   };
 
-  // Bind all of an object's methods to that object. Useful for ensuring that
-  // all callbacks defined on an object belong to it.
+  // Bind a number of an object's methods to that object. Remaining arguments
+  // are the method names to be bound. Useful for ensuring that all callbacks
+  // defined on an object belong to it.
   _.bindAll = function(obj) {
     var funcs = slice.call(arguments, 1);
-    if (funcs.length === 0) throw new Error("bindAll must be passed function names");
+    if (funcs.length === 0) throw new Error('bindAll must be passed function names');
     each(funcs, function(f) { obj[f] = _.bind(obj[f], obj); });
     return obj;
   };
@@ -4541,12 +5237,13 @@ if (typeof define === "function" && define.amd) {
     var previous = 0;
     options || (options = {});
     var later = function() {
-      previous = options.leading === false ? 0 : new Date;
+      previous = options.leading === false ? 0 : _.now();
       timeout = null;
       result = func.apply(context, args);
+      context = args = null;
     };
     return function() {
-      var now = new Date;
+      var now = _.now();
       if (!previous && options.leading === false) previous = now;
       var remaining = wait - (now - previous);
       context = this;
@@ -4556,6 +5253,7 @@ if (typeof define === "function" && define.amd) {
         timeout = null;
         previous = now;
         result = func.apply(context, args);
+        context = args = null;
       } else if (!timeout && options.trailing !== false) {
         timeout = setTimeout(later, remaining);
       }
@@ -4569,24 +5267,33 @@ if (typeof define === "function" && define.amd) {
   // leading edge, instead of the trailing.
   _.debounce = function(func, wait, immediate) {
     var timeout, args, context, timestamp, result;
+
+    var later = function() {
+      var last = _.now() - timestamp;
+      if (last < wait) {
+        timeout = setTimeout(later, wait - last);
+      } else {
+        timeout = null;
+        if (!immediate) {
+          result = func.apply(context, args);
+          context = args = null;
+        }
+      }
+    };
+
     return function() {
       context = this;
       args = arguments;
-      timestamp = new Date();
-      var later = function() {
-        var last = (new Date()) - timestamp;
-        if (last < wait) {
-          timeout = setTimeout(later, wait - last);
-        } else {
-          timeout = null;
-          if (!immediate) result = func.apply(context, args);
-        }
-      };
+      timestamp = _.now();
       var callNow = immediate && !timeout;
       if (!timeout) {
         timeout = setTimeout(later, wait);
       }
-      if (callNow) result = func.apply(context, args);
+      if (callNow) {
+        result = func.apply(context, args);
+        context = args = null;
+      }
+
       return result;
     };
   };
@@ -4608,11 +5315,7 @@ if (typeof define === "function" && define.amd) {
   // allowing you to adjust arguments, run code before and after, and
   // conditionally execute the original function.
   _.wrap = function(func, wrapper) {
-    return function() {
-      var args = [func];
-      push.apply(args, arguments);
-      return wrapper.apply(this, args);
-    };
+    return _.partial(wrapper, func);
   };
 
   // Returns a function that is the composition of a list of functions, each
@@ -4642,8 +5345,9 @@ if (typeof define === "function" && define.amd) {
 
   // Retrieve the names of an object's properties.
   // Delegates to **ECMAScript 5**'s native `Object.keys`
-  _.keys = nativeKeys || function(obj) {
-    if (obj !== Object(obj)) throw new TypeError('Invalid object');
+  _.keys = function(obj) {
+    if (!_.isObject(obj)) return [];
+    if (nativeKeys) return nativeKeys(obj);
     var keys = [];
     for (var key in obj) if (_.has(obj, key)) keys.push(key);
     return keys;
@@ -4798,7 +5502,8 @@ if (typeof define === "function" && define.amd) {
     // from different frames are.
     var aCtor = a.constructor, bCtor = b.constructor;
     if (aCtor !== bCtor && !(_.isFunction(aCtor) && (aCtor instanceof aCtor) &&
-                             _.isFunction(bCtor) && (bCtor instanceof bCtor))) {
+                             _.isFunction(bCtor) && (bCtor instanceof bCtor))
+                        && ('constructor' in a && 'constructor' in b)) {
       return false;
     }
     // Add the first object to the stack of traversed objects.
@@ -4938,6 +5643,30 @@ if (typeof define === "function" && define.amd) {
     return value;
   };
 
+  _.constant = function(value) {
+    return function () {
+      return value;
+    };
+  };
+
+  _.property = function(key) {
+    return function(obj) {
+      return obj[key];
+    };
+  };
+
+  // Returns a predicate for checking whether an object has a given set of `key:value` pairs.
+  _.matches = function(attrs) {
+    return function(obj) {
+      if (obj === attrs) return true; //avoid comparing an object to itself.
+      for (var key in attrs) {
+        if (attrs[key] !== obj[key])
+          return false;
+      }
+      return true;
+    }
+  };
+
   // Run a function **n** times.
   _.times = function(n, iterator, context) {
     var accum = Array(Math.max(0, n));
@@ -4953,6 +5682,9 @@ if (typeof define === "function" && define.amd) {
     }
     return min + Math.floor(Math.random() * (max - min + 1));
   };
+
+  // A (possibly faster) way to get the current timestamp as an integer.
+  _.now = Date.now || function() { return new Date().getTime(); };
 
   // List of HTML entities for escaping.
   var entityMap = {
@@ -5150,9 +5882,21 @@ if (typeof define === "function" && define.amd) {
 
   });
 
+  // AMD registration happens at the end for compatibility with AMD loaders
+  // that may not enforce next-turn semantics on modules. Even though general
+  // practice for AMD registration is to be anonymous, underscore registers
+  // as a named module because, like jQuery, it is a base library that is
+  // popular enough to be bundled in a third party lib, but not be part of
+  // an AMD load request. Those cases could generate an error when an
+  // anonymous define() is called outside of a loader request.
+  if (typeof define === 'function' && define.amd) {
+    define('underscore', [], function() {
+      return _;
+    });
+  }
 }).call(this);
 
-},{}],4:[function(_dereq_,module,exports){
+},{}],8:[function(_dereq_,module,exports){
 var _ = _dereq_('underscore'),
     utility = _dereq_('./utility/utility.js'),
     ConnectionEvents = _dereq_('./connection/ConnectionEvents.js'),
@@ -5161,6 +5905,8 @@ var _ = _dereq_('underscore'),
     ConnectionBookmarks = _dereq_('./connection/ConnectionBookmarks.js'),
     ConnectionAccesses = _dereq_('./connection/ConnectionAccesses.js'),
     ConnectionMonitors = _dereq_('./connection/ConnectionMonitors.js'),
+    ConnectionAccount = _dereq_('./connection/ConnectionAccount.js'),
+    CC = _dereq_('./connection/ConnectionConstants.js'),
     Datastore = _dereq_('./Datastore.js');
 
 /**
@@ -5171,13 +5917,13 @@ var _ = _dereq_('underscore'),
  *
  * @example
  * // create a connection for the user 'perkikiki' with the token 'TTZycvBTiq'
- * var conn = new pryv.Connection('perkikiki', 'TTZycvBTiq');
+ * var conn = new pryv.Connection({username: 'perkikiki', auth: 'TTZycvBTiq'});
  *
  * @constructor
  * @this {Connection}
- * @param {string} username
- * @param {string} auth - the authorization token for this username
  * @param {Object} [settings]
+ * @param {string} settings.username
+ * @param {string} settings.auth - the authorization token for this username
  * @param {boolean} [settings.staging = false] use Pryv's staging servers
  * @param {number} [settings.port = 443]
  * @param {string} [settings.domain = 'pryv.io'] change the domain. use "settings.staging = true" to
@@ -5261,6 +6007,7 @@ var Connection = module.exports = function Connection() {
    */
   this.monitors = new ConnectionMonitors(this);
 
+  this.account = new ConnectionAccount(this);
   this.datastore = null;
 
 };
@@ -5298,10 +6045,7 @@ Connection.prototype.accessInfo = function (callback) {
   if (this._accessInfo) { return this._accessInfo; }
   var url = '/access-info';
   this.request('GET', url, function (error, result) {
-    if (result && result.id) {
-      error = result;
-    }
-    if (! error && !result.message) {
+    if (! error) {
       this._accessInfo = result;
     }
     if (typeof(callback) === 'function') {
@@ -5381,6 +6125,8 @@ Connection.prototype.monitor = function (filter) {
  */
 Connection.prototype.request = function (method, path, callback, jsonData, isFile,
                                          progressCallback) {
+
+
   if (! callback || ! _.isFunction(callback)) {
     throw new Error('request\'s callback must be a function');
   }
@@ -5400,7 +6146,7 @@ Connection.prototype.request = function (method, path, callback, jsonData, isFil
 
   var request = utility.request({
     method : method,
-    host : this._getDomain(),
+    host : domainOfConnection(this),
     port : this.settings.port,
     ssl : this.settings.ssl,
     path : this.settings.extraPath + path,
@@ -5416,39 +6162,48 @@ Connection.prototype.request = function (method, path, callback, jsonData, isFil
   /**
    * @this {Connection}
    */
-  function onSuccess(result, requestInfos) {
+  function onSuccess(result, resultInfo) {
     var error = null;
-    if (result.message) {  // API < 0.6
+
+    var apiVersion = resultInfo.headers['API-Version'] || 
+      resultInfo.headers[CC.Api.Headers.ApiVersion];
+
+    // test if API is reached or if we headed into something else
+    if (! apiVersion) {
+      error = {
+        id : CC.Errors.API_UNREACHEABLE,
+        message: 'Cannot find API-Version',
+        details: 'Response code: ' + resultInfo.code +
+          ' Headers: ' + JSON.stringify(resultInfo.headers)
+      };
+    } else if (result.message) {  // API < 0.6
       error = result.message;
     } else
     if (result.error) { // API 0.7
       error = result.error;
     } else {
       this.serverInfos.lastSeenLT = (new Date()).getTime();
-      this.serverInfos.apiVersion = requestInfos.headers['api-version'] ||
-        this.serverInfos.apiVersion;
-      if (_.has(requestInfos.headers, 'server-time')) {
+      this.serverInfos.apiVersion = apiVersion || this.serverInfos.apiVersion;
+      if (_.has(resultInfo.headers, CC.Api.Headers.ServerTime)) {
         this.serverInfos.deltaTime = (this.serverInfos.lastSeenLT / 1000) -
-          requestInfos.headers['server-time'];
+          resultInfo.headers[CC.Api.Headers.ServerTime];
       }
     }
-    callback(error, result);
+    callback(error, result, resultInfo);
   }
 
-  function onError(error /*, requestInfo*/) {
-    callback(error, null);
+  function onError(error, resultInfo) {
+    var errorTemp = {
+      id : CC.Errors.API_UNREACHEABLE,
+      message: 'Error on request ',
+      details: 'ERROR: ' + error
+    };
+    callback(errorTemp, null, resultInfo);
   }
   return request;
 };
 
-Connection.prototype._getDomain = function () {
-  if (this.settings.url) {
-    return utility.getHostFromUrl(this.settings.url);
-  } else {
-    var host = this.settings.domain;
-    return this.username ? this.username + '.' + host : host;
-  }
-};
+
 
 /**
  * @property {string} Connection.id an unique id that contains all needed information to access
@@ -5457,7 +6212,7 @@ Connection.prototype._getDomain = function () {
 Object.defineProperty(Connection.prototype, 'id', {
   get: function () {
     var id = this.settings.ssl ? 'https://' : 'http://';
-    id += this._getDomain() + ':' +
+    id += domainOfConnection(this) + ':' +
       this.settings.port + this.settings.extraPath + '/?auth=' + this.auth;
     return id;
   },
@@ -5503,16 +6258,39 @@ Object.defineProperty(Connection.prototype, 'serialId', {
  * @callback Connection~requestCallback
  * @param {Object} error - eventual error
  * @param {Object} result - jSonEncoded result
+ * @param {Object} resultInfo
+ * @param {Number} resultInfo.code - HTTP result code
+ * @param {Object} resultInfo.headers - HTTP result headers by key
  */
 
-},{"./Datastore.js":5,"./connection/ConnectionAccesses.js":13,"./connection/ConnectionBookmarks.js":14,"./connection/ConnectionEvents.js":15,"./connection/ConnectionMonitors.js":16,"./connection/ConnectionProfile.js":17,"./connection/ConnectionStreams.js":18,"./utility/utility.js":28,"underscore":3}],5:[function(_dereq_,module,exports){
+
+// --------- private utils
+
+function domainOfConnection(connection) {
+  if (connection.settings.url) {
+    return utility.getHostFromUrl(connection.settings.url);
+  } else {
+    var host = connection.settings.domain;
+    return connection.username ? connection.username + '.' + host : host;
+  }
+}
+},{"./Datastore.js":9,"./connection/ConnectionAccesses.js":17,"./connection/ConnectionAccount.js":18,"./connection/ConnectionBookmarks.js":19,"./connection/ConnectionConstants.js":20,"./connection/ConnectionEvents.js":21,"./connection/ConnectionMonitors.js":22,"./connection/ConnectionProfile.js":23,"./connection/ConnectionStreams.js":24,"./utility/utility.js":34,"underscore":7}],9:[function(_dereq_,module,exports){
+/**
+ * DataStore handles in memory caching of objects.
+ * @private
+ */
+
 var _ = _dereq_('underscore');
+var Event = _dereq_('./Event');
 
 function Datastore(connection) {
   this.connection = connection;
   this.streamsIndex = {}; // streams are linked to their object representation
+  this.eventIndex = {}; // events are store by their id
   this.rootStreams = [];
 }
+
+module.exports = Datastore;
 
 Datastore.prototype.init = function (callback) {
   this.connection.streams._getObjects({state: 'all'}, function (error, result) {
@@ -5534,14 +6312,17 @@ Datastore.prototype._rebuildStreamIndex = function (streamArray) {
 
 Datastore.prototype._indexStreamArray = function (streamArray) {
   _.each(streamArray, function (stream) {
-    this.streamsIndex[stream.id] = stream;
-    if (! stream._parent) { this.rootStreams.push(stream); }
-    this._indexStreamArray(stream._children);
-    delete stream._children; // cleanup when in datastore mode
-    delete stream._parent;
+    this.indexStream(stream);
   }.bind(this));
 };
 
+Datastore.prototype.indexStream = function (stream) {
+  this.streamsIndex[stream.id] = stream;
+  if (! stream.parentId) { this.rootStreams.push(stream); }
+  this._indexStreamArray(stream._children);
+  delete stream._children; // cleanup when in datastore mode
+  delete stream._parent;
+};
 
 /**
  *
@@ -5567,16 +6348,95 @@ Datastore.prototype.getStreamById = function (streamId, test) {
   return result;
 };
 
-module.exports = Datastore;
+//-------------------------
+
+/**
+ * @param serialId
+ * @returns Event or null if not found
+ */
+Datastore.prototype.getEventBySerialId = function (serialId) {
+  var result = null;
+  _.each(this.eventIndex, function (event /*,eventId*/) {
+    if (event.serialId === serialId) { result = event; }
+    // TODO optimize and break
+  }.bind(this));
+  return result;
+};
+
+/**
+ * @param eventID
+ * @returns Event or null if not found
+ */
+Datastore.prototype.getEventById = function (eventId) {
+  return this.eventIndex[eventId];
+
+};
+
+/**
+ * @returns allEvents
+ */
+Datastore.prototype.getEventsMatchingFilter = function (filter) {
+  var result = [];
+  _.each(this.eventIndex, function (event /*,eventId*/) {
+    if (filter.matchEvent(event)) { result.push(event); }
+  }.bind(this));
+  return result;
+};
 
 
-},{"underscore":3}],6:[function(_dereq_,module,exports){
+/**
+ * @returns allEvents
+ */
+Datastore.prototype.getAllEvents = function () {
+  return _.value(this.eventIndex);
+};
+
+/**
+ * @param event
+ */
+Datastore.prototype.addEvent = function (event) {
+  if (! event.id) {
+    throw new Error('Datastore.addEvent cannot add event with unkown id', event);
+  }
+  this.eventIndex[event.id] = event;
+};
+
+
+
+/**
+ * @param {Object} data to map
+ * @return {Event} event
+ */
+Datastore.prototype.createOrReuseEvent = function (data) {
+  if (! data.id) {
+    throw new Error('Datastore.createOrReuseEvent cannot create event with ' +
+      ' unkown id' + _dereq_('util').inspect(data));
+  }
+
+  var result = this.getEventById(data.id);
+  if (result) {  // found event
+    _.extend(result, data);
+    return result;
+  }
+  // create an event and register it
+  result = new Event(this.connection, data);
+  this.addEvent(result);
+
+  return result;
+
+};
+
+
+
+},{"./Event":10,"underscore":7,"util":5}],10:[function(_dereq_,module,exports){
 
 var _ = _dereq_('underscore');
 
 var RW_PROPERTIES =
   ['streamId', 'time', 'duration', 'type', 'content', 'tags', 'description',
-    'clientData', 'state', 'modified'];
+    'clientData', 'state', 'modified', 'trashed'];
+
+
 
 /**
  *
@@ -5584,6 +6444,9 @@ var RW_PROPERTIES =
  * @constructor
  */
 var Event = module.exports = function Event(connection, data) {
+  if (! connection) {
+    throw new Error('Cannot create connection less events');
+  }
   this.connection = connection;
   this.serialId = this.connection.serialId + '>E' + this.connection._eventSerialCounter++;
   _.extend(this, data);
@@ -5621,12 +6484,28 @@ Event.prototype.removeAttachment = function (fileName, callback) {
   this.connection.events.removeAttachment(this.id, fileName, callback);
 };
 /**
+ * TODO create an attachment Class that contains such logic
+ * @param {attachment} attachment
+ */
+Event.prototype.attachmentUrl = function (attachment) {
+  var url =  this.connection.settings.ssl ? 'https://' : 'http://';
+  url += this.connection.username + '.' + this.connection.settings.domain + '/events/' +
+    this.id + '/' + attachment.id + '?readToken=' + attachment.readToken;
+  return url;
+};
+/**
  *
  * @param {Connection~requestCallback} callback
  */
 Event.prototype.trash = function (callback) {
   this.connection.events.trash(this, callback);
 };
+/**
+ * TODO document and rename to getPicturePreviewUrl
+ * @param width
+ * @param height
+ * @returns {string}
+ */
 Event.prototype.getPicturePreview = function (width, height) {
   width = width ? '&w=' + width : '';
   height = height ? '&h=' + height : '';
@@ -5635,6 +6514,10 @@ Event.prototype.getPicturePreview = function (width, height) {
     this.id + '?auth=' + this.connection.auth + width + height;
   return url;
 };
+
+/**
+ * TODO document
+ */
 Object.defineProperty(Event.prototype, 'timeLT', {
   get: function () {
     return this.connection.getLocalTime(this.time);
@@ -5646,18 +6529,23 @@ Object.defineProperty(Event.prototype, 'timeLT', {
 
 
 
-
+/**
+ * TODO document
+ */
 Object.defineProperty(Event.prototype, 'stream', {
   get: function () {
     if (! this.connection.datastore) {
       throw new Error('call connection.fetchStructure before to get automatic stream mapping.' +
         ' Or use StreamId');
     }
-    return this.connection.streams.getById(this.streamId);
+    return this.connection.datastore.getStreamById(this.streamId);
   },
   set: function () { throw new Error('Event.stream property is read only'); }
 });
 
+/**
+ * TODO document
+ */
 Object.defineProperty(Event.prototype, 'url', {
   get: function () {
     var url = this.connection.settings.ssl ? 'https://' : 'http://';
@@ -5677,11 +6565,12 @@ Object.defineProperty(Event.prototype, 'url', {
  * @property {number} [time]
  */
 
-},{"underscore":3}],7:[function(_dereq_,module,exports){
+},{"underscore":7}],11:[function(_dereq_,module,exports){
 var _ = _dereq_('underscore'),
     SignalEmitter = _dereq_('./utility/SignalEmitter.js');
 
 /**
+ * TODO Filter is badly missing a correct documentation
  * @constructor
  */
 var Filter = module.exports = function Filter(settings) {
@@ -5695,6 +6584,7 @@ var Filter = module.exports = function Filter(settings) {
     toTime: null,  // serverTime
     limit: null,
     skip: null,
+    types: null,
     modifiedSince: null,
     state: null
   }, settings);
@@ -5735,6 +6625,8 @@ function _normalizeTimeFrameST(filterData) {
 
 
 /**
+ * TODO write doc
+ * TODO complete with tags and state and modified and..
  * check if this event is in this filter
  */
 Filter.prototype.matchEvent = function (event) {
@@ -5835,7 +6727,7 @@ Filter.prototype.cloneWithDelta = function (properties) {
 /**
  *
  * @param ignoreNulls (optional) boolean
- * @param withDelta (optional) apply this differences on the datar
+ * @param withDelta (optional) apply this differences on the data
  * @returns {*}
  */
 Filter.prototype.getData = function (ignoreNulls, withDelta) {
@@ -5850,6 +6742,9 @@ Filter.prototype.getData = function (ignoreNulls, withDelta) {
   return result;
 };
 
+/**
+ * @private
+ */
 Filter.prototype._fireFilterChange = function (signal, content, batch) {
   // generic
   this._fireEvent(Messages.ON_CHANGE, {filter: this, signal: signal, content: content}, batch);
@@ -5858,9 +6753,10 @@ Filter.prototype._fireFilterChange = function (signal, content, batch) {
 };
 
 /**
+ * TODO review documentation and add example
  * Change several values of the filter in batch.. this wil group all events behind a batch id
- * @param keyValueMap
- * @param batch
+ * @param keyValueMap {Object}
+ * @param batch {SignalEmitter~Batch}
  */
 Filter.prototype.set = function (keyValueMap, batch) {
   batch = this.startBatch('set', batch);
@@ -5937,7 +6833,7 @@ Object.defineProperty(Filter.prototype, 'toTimeSTNormalized', {
 });
 
 /**
- * get toTime, return Number.POSITIVE_INFINITY if null
+ * get fromTime, return Number.POSITIVE_INFINITY if null
  */
 Object.defineProperty(Filter.prototype, 'fromTimeSTNormalized', {
   get: function () {
@@ -5980,9 +6876,12 @@ Object.defineProperty(Filter.prototype, 'streamsIds', {
 });
 
 
-
-
-//TODO: remove or rewrite (name & functionality unclear)
+/**
+ * return true if context (stream is on a single stream)
+ * This is usefull to check when creating and event in a context.
+ * This way, no need to ask the user for a stream specification.
+ * TODO determine if this should stay in the lib.. or handle by apps
+ */
 Filter.prototype.focusedOnSingleStream = function () {
   if (_.isArray(this._settings.streams) && this._settings.streams.length === 1) {
     return this._settings.streams[0];
@@ -6003,10 +6902,10 @@ Filter.prototype.focusedOnSingleStream = function () {
  */
 
 
-},{"./utility/SignalEmitter.js":22,"underscore":3}],8:[function(_dereq_,module,exports){
+},{"./utility/SignalEmitter.js":28,"underscore":7}],12:[function(_dereq_,module,exports){
 var _ = _dereq_('underscore'),
-    SignalEmitter = _dereq_('./utility/SignalEmitter.js'),
-    Filter = _dereq_('./Filter.js');
+  SignalEmitter = _dereq_('./utility/SignalEmitter.js'),
+  Filter = _dereq_('./Filter.js');
 
 
 var EXTRA_ALL_EVENTS = {state : 'all', modifiedSince : -100000000 };
@@ -6023,7 +6922,7 @@ function Monitor(connection, filter) {
 
   this.filter = filter;
 
-  this._lastUsedFilterData = filter;
+  this._lastUsedFilterData = filter.getData();
 
   if (this.filter.state) {
     throw new Error('Monitors only work for default state, not trashed or all');
@@ -6039,13 +6938,13 @@ Monitor.serial = 0;
 var Messages = Monitor.Messages = {
   /** content: events **/
   ON_LOAD : 'started',
-/** content: error **/
+  /** content: error **/
   ON_ERROR : 'error',
-/** content: { enter: [], leave: [], change } **/
+  /** content: { enter: [], leave: [], change } **/
   ON_EVENT_CHANGE : 'eventsChanged',
-/** content: streams **/
+  /** content: streams **/
   ON_STRUCTURE_CHANGE : 'streamsChanged',
-/** content: ? **/
+  /** content: ? **/
   ON_FILTER_CHANGE : 'filterChanged'
 };
 
@@ -6088,7 +6987,10 @@ Monitor.prototype._onIoError = function (error) {
 Monitor.prototype._onIoEventsChanged = function () {
   this._connectionEventsGetChanges(Messages.ON_EVENT_CHANGE);
 };
-Monitor.prototype._onIoStreamsChanged = function () { };
+Monitor.prototype._onIoStreamsChanged = function () {
+  console.log('SOCKETIO', '_onIoStreamsChanged');
+  this._connectionStreamsGetChanges(Messages.ON_STRUCTURE_CHANGE);
+};
 
 
 
@@ -6176,7 +7078,9 @@ Monitor.prototype._initEvents = function () {
     }.bind(this));
 };
 
-
+/**
+ * @private
+ */
 Monitor.prototype._connectionEventsGetChanges = function (signal) {
   var options = { modifiedSince : this.lastSynchedST, state : 'all'};
   this.lastSynchedST = this.connection.getServerTime();
@@ -6206,11 +7110,79 @@ Monitor.prototype._connectionEventsGetChanges = function (signal) {
     }.bind(this));
 };
 
+/**
+ * @private
+ */
+Monitor.prototype._connectionStreamsGetChanges = function (signal) {
+  var streams = {};
+  var created = [], modified = [], trashed = [];
+  var streamCompare = function (streamA, streamB) {
+    var sA = _.pick(streamA, ['id', 'name', 'parentId', 'singleActivity', 'clientData', 'trashed']);
+    var sB = _.pick(streamB, ['id', 'name', 'parentId', 'singleActivity', 'clientData', 'trashed']);
+    return _.isEqual(sA, sB);
+  };
+  var getFlatTree = function (stream) {
+    streams[stream.id] = stream;
+    _.each(stream.children, function (child) {
+      getFlatTree(child);
+    });
+  };
+  var checkChangedStatus = function (stream) {
 
+    if (!streams[stream.id]) {
+      created.push(stream);
+    } else if (!streamCompare(streams[stream.id], stream)) {
+      if (streams[stream.id].trashed !== stream.trashed) {
+        if (!stream.trashed) {
+          created.push(stream);
+        } else {
+          trashed.push(stream);
+        }
+      } else {
+        modified.push(stream);
+      }
+    }
+    _.each(stream.children, function (child) {
+      checkChangedStatus(child);
+    });
+  };
+  _.each(this.connection.datastore.getStreams(), function (rootStream) {
+    getFlatTree(rootStream);
+  });
+  this.connection.fetchStructure(function (error, result) {
+    _.each(result, function (rootStream) {
+      checkChangedStatus(rootStream);
+    });
+    this._fireEvent(signal, { created : created, trashed : trashed, modified: modified});
+  }.bind(this));
+};
+
+/**
+ * @private
+ */
 Monitor.prototype._connectionEventsGetAllAndCompare = function (signal, extracontent, batch) {
   this.lastSynchedST = this.connection.getServerTime();
 
 
+  if (false) {
+    // POC code to look into in-memory events for matching events..
+    // do not activate until cache handles DELETE
+    var result1 = { enter : [] };
+    _.extend(result1, extracontent);
+
+    var cachedEvents = this.connection.datastore.getEventsMatchingFilter(this.filter);
+    _.each(cachedEvents, function (event) {
+      if (! this._events.active[event.id]) {  // we don't care for already known event
+        this._events.active[event.id] = event; // store it
+        result1.enter.push(event);
+      }
+    }.bind(this));
+    if (result1.enter.length > 0) {
+      this._fireEvent(signal, result1, batch);
+    }
+  }
+
+  // look online
 
   var result = { enter : [] };
   _.extend(result, extracontent); // pass extracontent to receivers
@@ -6239,35 +7211,25 @@ Monitor.prototype._connectionEventsGetAllAndCompare = function (signal, extracon
 
 
 /**
+ * TODO write doc
  * return informations on events
  */
-Monitor.prototype.stats = function () {
-
-  var result = {
-    timeFrameST : [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY],
-    timeFrameLT : [null, null]
-  };
-  _.each(this._events.active, function (event) {
-    if (event.time < result.timeFrameST[0]) {
-      result.timeFrameST[0] = event.time;
-      result.timeFrameLT[0] = event.timeLT;
-    }
-    if (event.time > result.timeFrameST[1]) {
-      result.timeFrameST[1] = event.time;
-      result.timeFrameLT[1] = event.timeLT;
-    }
-  });
-  return result;
+Monitor.prototype.stats = function (force, callback) {
+  this.connection.profile.getTimeLimits(force, callback);
 };
 
 module.exports = Monitor;
 
 
 
-},{"./Filter.js":7,"./utility/SignalEmitter.js":22,"underscore":3}],9:[function(_dereq_,module,exports){
+},{"./Filter.js":11,"./utility/SignalEmitter.js":28,"underscore":7}],13:[function(_dereq_,module,exports){
 
 var _ = _dereq_('underscore');
 
+/**
+ * TODO write documentation  with use cases.. !!
+ * @type {Function}
+ */
 var Stream = module.exports = function Stream(connection, data) {
   this.connection = connection;
 
@@ -6301,9 +7263,12 @@ Object.defineProperty(Stream.prototype, 'parent', {
 
     return this.connection.datastore.getStreamById(this.parentId);
   },
-  set: function () { throw new Error('Stream.children property is read only'); }
+  set: function () { throw new Error('Stream.parent property is read only'); }
 });
 
+/**
+ * TODO write documentation
+ */
 Object.defineProperty(Stream.prototype, 'children', {
   get: function () {
     if (! this.connection.datastore) { // we use this._parent and this._children
@@ -6315,7 +7280,8 @@ Object.defineProperty(Stream.prototype, 'children', {
       children.push(child);
     }.bind(this));
     return children;
-  }
+  },
+  set: function () { throw new Error('Stream.children property is read only'); }
 });
 
 // TODO write test
@@ -6335,7 +7301,7 @@ Object.defineProperty(Stream.prototype, 'ancestors', {
 
 
 
-},{"underscore":3}],10:[function(_dereq_,module,exports){
+},{"underscore":7}],14:[function(_dereq_,module,exports){
 /* global confirm, document, navigator, location, window */
 
 var utility = _dereq_('../utility/utility.js');
@@ -6672,7 +7638,7 @@ Auth.prototype.login = function (settings) {
           this.settings.callbacks.signedIn(this.connection);
         }
       } else {
-        if (typeof(this.settings.error) === 'function') {
+        if (typeof(this.settings.callbacks.error) === 'function') {
           this.settings.callbacks.error(data);
         }
       }
@@ -6792,7 +7758,7 @@ Auth.prototype.setup = function (settings) {
     utility.getPreferredLanguage(this.uiSupportedLanguages, settings.languageCode);
 
   //-- returnURL
-  settings.returnURL = settings.returnURL || 'auto#';
+  settings.returnURL = settings.returnURL || 'auto#';
   if (settings.returnURL) {
     // check the trailer
     var trailer = settings.returnURL.charAt(settings.returnURL.length - 1);
@@ -6997,16 +7963,16 @@ Auth.prototype._cleanStatusFromURL = function () {
 
 module.exports = new Auth();
 
-},{"../Connection.js":4,"../utility/utility.js":28,"underscore":3}],11:[function(_dereq_,module,exports){
+},{"../Connection.js":8,"../utility/utility.js":34,"underscore":7}],15:[function(_dereq_,module,exports){
 
 module.exports = {};
-},{}],12:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 var utility = _dereq_('../utility/utility.js');
 
 module.exports =  utility.isBrowser() ?
     _dereq_('./Auth-browser.js') : _dereq_('./Auth-node.js');
 
-},{"../utility/utility.js":28,"./Auth-browser.js":10,"./Auth-node.js":11}],13:[function(_dereq_,module,exports){
+},{"../utility/utility.js":34,"./Auth-browser.js":14,"./Auth-node.js":15}],17:[function(_dereq_,module,exports){
 var apiPathAccesses = '/accesses';
 var _ = _dereq_('underscore');
 
@@ -7032,6 +7998,11 @@ Accesses.prototype.get = function (callback) {
   });
 };
 
+/**
+ * TODO complete documentation
+ * @param access
+ * @param callback
+ */
 Accesses.prototype.create = function (access, callback) {
   this.connection.request('POST', apiPathAccesses, function (err, res) {
     var access = res.access;
@@ -7040,6 +8011,12 @@ Accesses.prototype.create = function (access, callback) {
     }
   }, access);
 };
+
+/**
+ * TODO complete documentation
+ * @param access
+ * @param callback
+ */
 Accesses.prototype.update = function (access, callback) {
   if (access.id) {
     this.connection.request('PUT', apiPathAccesses + '/' + access.id, callback,
@@ -7052,6 +8029,11 @@ Accesses.prototype.update = function (access, callback) {
   }
 };
 
+/**
+ * TODO complete documentation
+ * @param access
+ * @param callback
+ */
 Accesses.prototype.delete = function (sharingId, callback) {
   this.connection.request('DELETE', apiPathAccesses + '/' + sharingId, function (err, result) {
     var error = err;
@@ -7062,7 +8044,33 @@ Accesses.prototype.delete = function (sharingId, callback) {
   });
 };
 module.exports = Accesses;
-},{"underscore":3}],14:[function(_dereq_,module,exports){
+},{"underscore":7}],18:[function(_dereq_,module,exports){
+var apiPathAccount = '/account';
+
+function Account(connection) {
+  this.connection = connection;
+}
+
+Account.prototype.changePassword = function (oldPassword, newPassword, callback) {
+  this.connection.request('POST', apiPathAccount + '/change-password', function (err) {
+    if (typeof(callback) === 'function') {
+      callback(err);
+    }
+  }, {'oldPassword': oldPassword, 'newPassword': newPassword});
+};
+Account.prototype.getInfo = function (callback) {
+  this.connection.request('GET', apiPathAccount, function (error, result) {
+    if (typeof(callback) === 'function') {
+      if (result && result.account) {
+        result = result.account;
+      }
+      callback(error, result);
+    }
+  });
+};
+
+module.exports = Account;
+},{}],19:[function(_dereq_,module,exports){
 var apiPathBookmarks = '/followed-slices',
   Connection = _dereq_('../Connection.js'),
   _ = _dereq_('underscore');
@@ -7085,6 +8093,8 @@ Bookmarks.prototype.get = function (callback) {
     var result = [],
       bookmarks = res.followedSlices || res.followedSlice;
     _.each(bookmarks, function (bookmark) {
+      bookmark.url = bookmark.url.replace(/\.li/, '.in');
+      bookmark.url = bookmark.url.replace(/\.me/, '.io');
       var conn =  new Connection({
         auth: bookmark.accessToken,
         url: bookmark.url,
@@ -7097,13 +8107,17 @@ Bookmarks.prototype.get = function (callback) {
   });
 };
 
+/**
+ * TODO complete documentation
+ * @param bookmark
+ * @param callback
+ * @returns {*}
+ */
 Bookmarks.prototype.create = function (bookmark, callback) {
   if (bookmark.name && bookmark.url && bookmark.accessToken) {
     this.connection.request('POST', apiPathBookmarks, function (err, result) {
       var error = err;
-      if (result && result.message) {
-        error = result;
-      } else if (result) {
+      if (!error) {
         var conn =  new Connection({
           auth: bookmark.accessToken,
           url: bookmark.url,
@@ -7117,6 +8131,12 @@ Bookmarks.prototype.create = function (bookmark, callback) {
     return bookmark;
   }
 };
+
+/**
+ * TODO complete documentation
+ * @param bookmarkId
+ * @param callback
+ */
 Bookmarks.prototype.delete = function (bookmarkId, callback) {
   this.connection.request('DELETE', apiPathBookmarks + '/' + bookmarkId, function (err, result) {
     var error = err;
@@ -7128,11 +8148,24 @@ Bookmarks.prototype.delete = function (bookmarkId, callback) {
 };
 
 module.exports = Bookmarks;
-},{"../Connection.js":4,"underscore":3}],15:[function(_dereq_,module,exports){
+},{"../Connection.js":8,"underscore":7}],20:[function(_dereq_,module,exports){
+exports.Errors = {
+  API_UNREACHEABLE : 'API_UNREACHEABLE',
+  INVALID_RESULT_CODE : 'INVALID_RESULT_CODE'
+};
+
+exports.Api = {
+  Headers : {
+    ServerTime : 'server-time',
+    ApiVersion : 'api-version'
+  }
+};
+},{}],21:[function(_dereq_,module,exports){
 var utility = _dereq_('../utility/utility.js'),
   _ = _dereq_('underscore'),
   Filter = _dereq_('../Filter'),
-  Event = _dereq_('../Event');
+  Event = _dereq_('../Event'),
+  CC = _dereq_('./ConnectionConstants.js');
 
 /**
  * @class ConnectionEvents
@@ -7172,10 +8205,22 @@ function ConnectionEvents(connection) {
 ConnectionEvents.prototype.get = function (filter, doneCallback, partialResultCallback) {
   //TODO handle caching
   var result = [];
+  filter = filter || {};
   this._get(filter, function (error, res) {
+    if (error) {
+      result = null;
+    }
     var eventList = res.events || res.event;
     _.each(eventList, function (eventData) {
-      result.push(new Event(this.connection, eventData));
+
+      var event = null;
+      if (! this.connection.datastore) { // no datastore   break
+        event = new Event(this.connection, eventData);
+      } else {
+        event = this.connection.datastore.createOrReuseEvent(eventData);
+      }
+
+      result.push(event);
     }.bind(this));
     doneCallback(error, result);
     if (partialResultCallback) { partialResultCallback(result); }
@@ -7204,7 +8249,21 @@ ConnectionEvents.prototype.trash = function (event, callback) {
  */
 ConnectionEvents.prototype.trashWithId = function (eventId, callback) {
   var url = '/events/' + eventId;
-  this.connection.request('DELETE', url, callback, null);
+  this.connection.request('DELETE', url, function (error, result) {
+    // assume there is only one event (no batch for now)
+    if (result && result.event) {
+      if (! this.connection.datastore) { // no datastore   break
+        result = new Event(this.connection, result.event);
+      } else {
+        result = this.connection.datastore.createOrReuseEvent(result.event);
+      }
+    }  else {
+      result = null;
+    }
+    if (callback && typeof(callback) === 'function') {
+      callback(error, result);
+    }
+  }.bind(this), null);
 };
 
 /**
@@ -7213,9 +8272,10 @@ ConnectionEvents.prototype.trashWithId = function (eventId, callback) {
  * @param {NewEventLike} event -- minimum {streamId, type } -- if typeof Event, must belong to
  * the same connection and not exists on the API.
  * @param {ConnectionEvents~eventCreatedOnTheAPI} callback
+ * @param {Boolean} [start = false] if set to true will POST the event to /events/start
  * @return {Event} event
  */
-ConnectionEvents.prototype.create = function (newEventlike, callback) {
+ConnectionEvents.prototype.create = function (newEventlike, callback, start) {
   var event = null;
   if (newEventlike instanceof Event) {
     if (newEventlike.connection !== this.connection) {
@@ -7230,39 +8290,154 @@ ConnectionEvents.prototype.create = function (newEventlike, callback) {
   }
 
   var url = '/events';
-  this.connection.request('POST', url, function (err, result) {
-    if (result) {
+  if (start) { url = '/events/start'; }
+
+
+  this.connection.request('POST', url, function (err, result, resultInfo) {
+    if (! err && resultInfo.code !== 201) {
+      err = {id : CC.Errors.INVALID_RESULT_CODE};
+    }
+    /**
+     * Change will happend with offline caching...
+     *
+     * An error may hapend 400.. or other if app is behind an non-opened gateway. Thus making
+     * difficult to detect if the error is a real bad request.
+     * The first step would be to consider only bad request if the response can be identified
+     * as coming from a valid api-server. If not, we should cache the event for later synch
+     * then remove the error and send the cached version of the event.
+     *
+     */
+    // TODO if err === API_UNREACHABLE then save event in cache
+    if (result && ! err) {
       _.extend(event, result.event);
+      if (this.connection.datastore) {  // if datastore is activated register new event
+        this.connection.datastore.addEvent(event);
+      }
     }
     if (_.isFunction(callback)) {
-      callback(err, event);
+
+      callback(err, err ? null : event);
     }
-  }, event.getData());
+  }.bind(this), event.getData());
   return event;
 };
-ConnectionEvents.prototype.createWithAttachment = function (newEventLike, file, callback,
-                                                            progressCallback) {
-  var event = null;
-  if (newEventLike instanceof Event) {
-    if (newEventLike.connection !== this.connection) {
-      return callback(new Error('event.connection does not match current connection'));
-    }
-    if (newEventLike.id) {
-      return callback(new Error('cannot create an event already existing on the API'));
-    }
-    event = newEventLike;
-  } else {
-    event = new Event(this.connection, newEventLike);
-  }
-  file.append('event', JSON.stringify(event.getData()));
-  var url = '/events';
-  this.connection.request('POST', url, function (err, result) {
-    if (result) {
-      _.extend(event, result.event);
-    }
-    callback(err, event);
-  }, file, true, progressCallback);
+
+/**
+ * This is the preferred method to create and start an event, Starts a new period event.
+ * This is equivalent to starting an event with a null duration. In singleActivity streams,
+ * also stops the previously running period event if any.
+ * @param {NewEventLike} event -- minimum {streamId, type } -- if typeof Event, must belong to
+ * the same connection and not exists on the API.
+ * @param {ConnectionEvents~eventCreatedOnTheAPI} callback
+ * @return {Event} event
+ */
+ConnectionEvents.prototype.start = function (newEventlike, callback) {
+  this.create(newEventlike, callback, true);
 };
+
+/**
+ * Stop an event by it's Id
+ * @param {EventLike} event -- minimum {id} -- if typeof Event, must belong to
+ * the same connection and not exists on the API.
+ * @param {Date} [date = now] the date to set to stop the event
+ * @param {ConnectionEvents~eventStoppedOnTheAPI} callback
+ * @return {Event} event
+ */
+ConnectionEvents.prototype.stopEvent = function (eventlike, date, callback) {
+  var url = '/events/stop';
+
+  var data = {id : eventlike.id };
+  if (date) { data.time = date.getTime() / 1000; }
+
+
+  this.connection.request('POST', url, function (err, result, resultInfo) {
+    if (! err && resultInfo.code !== 200) {
+      err = {id : CC.Errors.INVALID_RESULT_CODE};
+    }
+
+
+    // TODO if err === API_UNREACHABLE then save event in cache
+    /*
+    if (result && ! err) {
+      if (this.connection.datastore) {  // if datastore is activated register new event
+
+      }
+    } */
+    if (_.isFunction(callback)) {
+      callback(err, err ? null : result.stoppedId);
+    }
+  }.bind(this), data);
+};
+
+
+
+/**
+ * Stop any event in this stream
+ * @param {StreamLike} stream -- minimum {id} -- if typeof Stream, must belong to
+ * the same connection and not exists on the API.
+ * @param {Date} [date = now] the date to set to stop the event
+ * @param {String} [type = null] stop any matching eventType is this stream.
+ * @param {ConnectionEvents~eventStoppedOnTheAPI} callback
+ * @return {Event} event
+ */
+ConnectionEvents.prototype.stopStream = function (streamLike, date, type, callback) {
+  var url = '/events/stop';
+
+  var data = {streamId : streamLike.id };
+  if (date) { data.time = date.getTime() / 1000; }
+  if (type) { data.type = type; }
+
+
+  this.connection.request('POST', url, function (err, result, resultInfo) {
+    if (! err && resultInfo.code !== 200) {
+      err = {id : CC.Errors.INVALID_RESULT_CODE};
+    }
+
+    // TODO if err === API_UNREACHABLE then cache the stop instruction for later synch
+
+    if (_.isFunction(callback)) {
+      callback(err, err ? null : result.stoppedId);
+    }
+  }.bind(this), data);
+};
+
+
+/**
+ * @param {NewEventLike} event -- minimum {streamId, type } -- if typeof Event, must belong to
+ * the same connection and not exists on the API.
+ * @param {ConnectionEvents~eventCreatedOnTheAPI} callback
+ * @param {FormData} the formData to post for fileUpload. On node.js
+ * refers to pryv.utility.forgeFormData
+ * @return {Event} event
+ */
+ConnectionEvents.prototype.createWithAttachment =
+  function (newEventLike, formData, callback, progressCallback) {
+    var event = null;
+    if (newEventLike instanceof Event) {
+      if (newEventLike.connection !== this.connection) {
+        return callback(new Error('event.connection does not match current connection'));
+      }
+      if (newEventLike.id) {
+        return callback(new Error('cannot create an event already existing on the API'));
+      }
+      event = newEventLike;
+    } else {
+      event = new Event(this.connection, newEventLike);
+    }
+    formData.append('event', JSON.stringify(event.getData()));
+    var url = '/events';
+    this.connection.request('POST', url, function (err, result) {
+      if (result) {
+        _.extend(event, result.event);
+
+        if (this.connection.datastore) {  // if datastore is activated register new event
+          this.connection.datastore.addEvent(event);
+        }
+
+      }
+      callback(err, event);
+    }.bind(this), formData, true, progressCallback);
+  };
 ConnectionEvents.prototype.addAttachment = function (eventId, file, callback, progressCallback) {
   var url = '/events/' + eventId;
   this.connection.request('POST', url, callback, file, true, progressCallback);
@@ -7272,7 +8447,11 @@ ConnectionEvents.prototype.removeAttachment = function (eventId, fileName, callb
   this.connection.request('DELETE', url, callback);
 };
 /**
+ * //TODO rename to batch
  * //TODO make it NewEventLike compatible
+ * //TODO once it support an array of mixed values Event and EventLike, the, no need for
+ *  callBackWithEventsBeforeRequest at it will. A dev who want Event object just have to create
+ *  them before
  * This is the prefered method to create events in batch
  * @param {Object[]} eventsData -- minimum {streamId, type }
  * @param {ConnectionEvents~eventBatchCreatedOnTheAPI}
@@ -7281,37 +8460,54 @@ ConnectionEvents.prototype.removeAttachment = function (eventId, fileName, callb
  */
 ConnectionEvents.prototype.batchWithData =
   function (eventsData, callback, callBackWithEventsBeforeRequest) {
-  if (!_.isArray(eventsData)) { eventsData = [eventsData]; }
+    if (!_.isArray(eventsData)) { eventsData = [eventsData]; }
 
-  var createdEvents = [];
-  var eventMap = {};
+    var createdEvents = [];
+    var eventMap = {};
 
-  var url = '/events/batch';
-  // use the serialId as a temporary Id for the batch
-  _.each(eventsData, function (eventData) {
-    var event =  new Event(this.connection, eventData);
-    createdEvents.push(event);
-    eventMap[event.serialId] = event;
-    eventData.tempRefId = event.serialId;
-  }.bind(this));
+    var url = '/';
+    // use the serialId as a temporary Id for the batch
+    _.each(eventsData, function (eventData, i) {
 
-  if (callBackWithEventsBeforeRequest) {
-    callBackWithEventsBeforeRequest(createdEvents);
-  }
+      var event =  new Event(this.connection, eventData);
 
-  this.connection.request('POST', url, function (err, result) {
-    _.each(result, function (eventData, tempRefId) {
-      _.extend(eventMap[tempRefId], eventData); // add the data to the event
-    });
-    callback(err, createdEvents);
-  }, eventsData);
+      createdEvents.push(event);
+      eventMap[i] = event;
+    }.bind(this));
 
-  return createdEvents;
-};
+    if (callBackWithEventsBeforeRequest) {
+      callBackWithEventsBeforeRequest(createdEvents);
+    }
+
+    var mapBeforePush = function (evs) {
+      return _.map(evs, function (e) {
+        return {
+          method: 'events.create',
+          params: e
+        };
+      });
+    };
+
+    this.connection.request('POST', url, function (err, result) {
+      _.each(result.results, function (eventData, i) {
+        _.extend(eventMap[i], eventData.event); // add the data to the event
+
+        if (this.connection.datastore) {  // if datastore is activated register new event
+          this.connection.datastore.addEvent(eventMap[i]);
+        }
+
+
+      }.bind(this));
+      callback(err, createdEvents);
+    }.bind(this), mapBeforePush(eventsData));
+
+    return createdEvents;
+  };
 
 // --- raw access to the API
 
 /**
+ * TODO anonymise by renaming to function _get(..
  * @param {FilterLike} filter
  * @param {Connection~requestCallback} callback
  * @private
@@ -7328,6 +8524,7 @@ ConnectionEvents.prototype._get = function (filter, callback) {
 
 
 /**
+ * TODO anonymise by renaming to function _xx(..
  * @param {String} eventId
  * @param {Object} data
  * @param  {Connection~requestCallback} callback
@@ -7335,9 +8532,38 @@ ConnectionEvents.prototype._get = function (filter, callback) {
  */
 ConnectionEvents.prototype._updateWithIdAndData = function (eventId, data, callback) {
   var url = '/events/' + eventId;
-  this.connection.request('PUT', url, callback, data);
+  this.connection.request('PUT', url, function (error, result) {
+    if (!error && result && result.event) {
+      if (!this.connection.datastore) {
+        result = new Event(this.connection, result.event);
+      } else {
+        result = this.connection.datastore.createOrReuseEvent(result.event);
+      }
+    } else {
+      result = null;
+    }
+    if (callback && typeof(callback) === 'function') {
+      callback(error, result);
+    }
+  }.bind(this), data);
 };
 
+
+/**
+ * @private
+ * @param {Event} event
+ * @param {Object} the data to map
+ */
+ConnectionEvents.prototype._registerNewEvent = function (event, data) {
+
+
+  if (! event.connection.datastore) { // no datastore   break
+    _.extend(event, data);
+    return event;
+  }
+
+  return event.connection.datastore.createOrReuseEvent(this, data);
+};
 
 module.exports = ConnectionEvents;
 
@@ -7364,13 +8590,20 @@ module.exports = ConnectionEvents;
  */
 
 /**
+ * Called when an event is created on the API
+ * @callback ConnectionEvents~eventStoppedOnTheAPI
+ * @param {Object} error - eventual error
+ * @param {String} stoppedEventId or null if event not found
+ */
+
+/**
  * Called when batch create an array of events on the API
  * @callback ConnectionEvents~eventBatchCreatedOnTheAPI
  * @param {Object} error - eventual error
  * @param {Event[]} events
  */
 
-},{"../Event":6,"../Filter":7,"../utility/utility.js":28,"underscore":3}],16:[function(_dereq_,module,exports){
+},{"../Event":10,"../Filter":11,"../utility/utility.js":34,"./ConnectionConstants.js":20,"underscore":7}],22:[function(_dereq_,module,exports){
 var _ = _dereq_('underscore'),
     utility = _dereq_('../utility/utility'),
     Monitor = _dereq_('../Monitor');
@@ -7457,24 +8690,126 @@ module.exports = ConnectionMonitors;
 
 
 
-},{"../Monitor":8,"../utility/utility":28,"underscore":3}],17:[function(_dereq_,module,exports){
+},{"../Monitor":12,"../utility/utility":34,"underscore":7}],23:[function(_dereq_,module,exports){
 var apiPathPrivateProfile = '/profile/private';
 var apiPathPublicProfile = '/profile/app';
 
 
 /**
  * @class Profile
- @link http://api.pryv.com/reference.html#methods-app-profile
+ * @link http://api.pryv.com/reference.html#methods-app-profile
+ */
+
+/**
+ * Accessible by connection.profile.xxx`
  * @param {Connection} connection
  * @constructor
  */
 function Profile(connection) {
   this.connection = connection;
+  this.timeLimits = null;
 }
 
 
 
+
 /**
+ * @param {String | null} key
+ * @param {Connection~requestCallback} callback - handles the response
+ */
+Profile.prototype.getPrivate = function (key, callback) {
+  this._get(apiPathPrivateProfile, key, callback);
+};
+/**
+ * @param {String | null} key
+ * @param {Connection~requestCallback} callback - handles the response
+ */
+Profile.prototype.getPublic = function (key, callback) {
+  this._get(apiPathPublicProfile, key, callback);
+};
+
+
+/**
+ * @example
+ * // set x=25 and delete y
+ * conn.profile.setPrivate({x : 25, y : null}, function(error) { console.log('done'); });
+ *
+ * @param {Object} keyValuePairs
+ * @param {Connection~requestCallback} callback - handles the response
+ */
+Profile.prototype.setPrivate = function (keyValuePairs, callback) {
+  this._set(apiPathPrivateProfile, keyValuePairs, callback);
+};
+/**
+ * @example
+ * // set x=25 and delete y
+ * conn.profile.setPublic({x : 25, y : null}, function(error) { console.log('done'); });
+ *
+ * @param {Object} keyValuePairs
+ * @param {Connection~requestCallback} callback - handles the response
+ */
+Profile.prototype.setPublic = function (keyValuePairs, callback) {
+  this._set(apiPathPublicProfile, keyValuePairs, callback);
+};
+
+/**
+ * TODO write documentation
+ */
+Profile.prototype.getTimeLimits = function (force, callback) {
+  if (!force && this.timeLimits) {
+    if (callback && typeof(callback) === 'function') {
+      callback(this.timeLimits);
+    }
+  } else {
+    var i = 2;
+    this.timeLimits = {
+      timeFrameST : [],
+      timeFrameLT : []
+    };
+    this.connection.events.get({
+      toTime: 9900000000,
+      fromTime: 0,
+      limit: 1,
+      sortAscending: false,
+      state: 'all'
+    }, function (error, events) {
+      if (!error && events) {
+        this.timeLimits.timeFrameST[1] = events[0].time;
+        this.timeLimits.timeFrameLT[1] = events[0].timeLT;
+      }
+      i--;
+      if (i === 0) {
+        if (callback && typeof(callback) === 'function') {
+          callback(this.timeLimits);
+        }
+      }
+    }.bind(this));
+    this.connection.events.get({
+      toTime: 9900000000, // TODO add a constant UNDEFINED_TO_TIME in constant
+      fromTime: -9900000000, // TODO add a constant UNDEFINED_FROM_TIME in constant
+      limit: 1,
+      sortAscending: true,
+      state: 'all'
+    }, function (error, events) {
+      if (!error && events) {
+        this.timeLimits.timeFrameST[0] = events[0].time;
+        this.timeLimits.timeFrameLT[0] = events[0].timeLT;
+      }
+      i--;
+      if (i === 0) {
+        if (callback && typeof(callback) === 'function') {
+          callback(this.timeLimits);
+        }
+      }
+    }.bind(this));
+  }
+};
+
+
+// --------- private stuff to be hidden
+
+/**
+ * @private
  * @param {String | null} key
  * @param {Connection~requestCallback} callback - handles the response
  */
@@ -7490,15 +8825,9 @@ Profile.prototype._get = function (path, key, callback) {
   }
   this.connection.request('GET', path, myCallBack);
 };
-Profile.prototype.getPrivate = function (key, callback) {
-  this._get(apiPathPrivateProfile, key, callback);
-};
-Profile.prototype.getPublic = function (key, callback) {
-  this._get(apiPathPublicProfile, key, callback);
-};
-
 
 /**
+ * @private
  * @example
  * // set x=25 and delete y
  * conn.profile.set({x : 25, y : null}, function(error) { console.log('done'); });
@@ -7509,16 +8838,9 @@ Profile.prototype.getPublic = function (key, callback) {
 Profile.prototype._set = function (path, keyValuePairs, callback) {
   this.connection.request('PUT', path, callback, keyValuePairs);
 };
-Profile.prototype.setPrivate = function (key, callback) {
-  this._set(apiPathPrivateProfile, key, callback);
-};
-Profile.prototype.setPublic = function (key, callback) {
-  this._set(apiPathPublicProfile, key, callback);
-};
-
 
 module.exports = Profile;
-},{}],18:[function(_dereq_,module,exports){
+},{}],24:[function(_dereq_,module,exports){
 var _ = _dereq_('underscore'),
     utility = _dereq_('../utility/utility.js'),
     Stream = _dereq_('../Stream.js');
@@ -7564,15 +8886,32 @@ ConnectionStreams.prototype.get = function (options, callback) {
     } else {
       resultTree = this.connection.datastore.getStreams();
     }
-    callback(null, resultTree);
+    if (resultTree.length > 0) {
+      callback(null, resultTree);
+    } else {
+      this._getObjects(options, callback);
+    }
   } else {
     this._getObjects(options, callback);
   }
 };
 
+/**
+ * TODO make it object-aware like for Events
+ * TODO why to we need a _create ?
+ * TODO could return Stream object synchronously before calling the API
+ * @param streamData
+ * @param callback
+ */
+ConnectionStreams.prototype.create = function (streamData, callback) {
+  streamData = _.pick(streamData, 'id', 'name', 'parentId', 'singleActivity',
+    'clientData', 'trashed');
+  this._createWithData(streamData, callback);
+};
 
 
 /**
+ * TODO remove it's unused
  * @param {ConnectionStreamsOptions} options
  * @param {ConnectionStreams~getCallback} callback - handles the response
  */
@@ -7592,6 +8931,7 @@ ConnectionStreams.prototype.updateProperties = function (stream, properties, opt
 
 
 /**
+ * TODO remove it's unused and could lead to miscumprhension
  * Get a Stream by it's Id.
  * Works only if fetchStructure has been done once.
  * @param {string} streamId
@@ -7618,12 +8958,10 @@ ConnectionStreams.prototype._getData = function (opts, callback) {
   this.connection.request('GET', url, callback, null);
 };
 
-ConnectionStreams.prototype.create = function (streamData, callback) {
-  streamData = _.pick(streamData, 'id', 'name', 'parentId', 'singleActivity',
-    'clientData', 'trashed');
-  this._createWithData(streamData, callback);
-};
+
 /**
+ * TODO makes it return the Stream object before doing the online request
+ * TODO create a streamLike Object
  * Create a stream on the API with a jsonObject
  * @private
  * @param {Object} streamData an object array.. typically one that can be obtained with
@@ -7633,13 +8971,17 @@ ConnectionStreams.prototype.create = function (streamData, callback) {
 ConnectionStreams.prototype._createWithData = function (streamData, callback) {
   var url = '/streams';
   this.connection.request('POST', url, function (err, resultData) {
-    if (resultData) {
+    if (!err && resultData) {
       streamData.id = resultData.stream.id;
+      var stream = new Stream(this.connection, resultData.stream);
+      if (this.connection.datastore) {
+        this.connection.datastore.indexStream(stream);
+      }
     }
     if (_.isFunction(callback)) {
       return callback(err, resultData.stream);
     }
-  }, streamData);
+  }.bind(this), streamData);
 };
 
 /**
@@ -7666,7 +9008,7 @@ ConnectionStreams.prototype._getObjects = function (options, callback) {
   var streamsIndex = {};
   var resultTree = [];
   this._getData(options, function (error, result) {
-    if (error) { return callback('Stream.get failed: ' + error); }
+    if (error) { return callback('Stream.get failed: ' + JSON.stringify(error)); }
     var treeData = result.streams || result.stream;
     ConnectionStreams.Utils.walkDataTree(treeData, function (streamData) {
       var stream = new Stream(this.connection, streamData);
@@ -7712,11 +9054,6 @@ ConnectionStreams.prototype.walkTree = function (options, eachStream, done) {
 };
 
 
-/**
- * Called when tree has been flatened
- * @callback ConnectionStreams~getFlatenedObjectsDone
- * @param {ConnectionStreams[]} streams
- */
 
 /**
  * Get the all the streams of the Tree in a list.. parents firsts
@@ -7743,10 +9080,51 @@ ConnectionStreams.prototype.getDisplayTree = function (arrayOfStreams) {
   return ConnectionStreams.Utils._debugTree(arrayOfStreams);
 };
 
+/**
+ * Utility to get a Stream Tree as if was sent by the API
+ * @param {ConnectionStreams[]} arrayOfStreams
+ */
+ConnectionStreams.prototype.toJSON = function (arrayOfStreams) {
+  return ConnectionStreams.Utils.toJSON(arrayOfStreams);
+};
+
 
 // TODO Validate that it's the good place for them .. Could have been in Stream or utility
 ConnectionStreams.Utils = {
 
+  /**
+   * Make a pure JSON object from an array of Stream.. shoudl be the same than what we
+   * get from the API
+   * @param streamArray
+   * @param eachStream
+   */
+  toJSON : function (arrayOfStreams) {
+
+    var result = [];
+    if (! arrayOfStreams  || ! arrayOfStreams instanceof Array) {
+      throw new Error('expected an array for argument :' + arrayOfStreams);
+    }
+
+    _.each(arrayOfStreams, function (stream) {
+      if (! stream || ! stream instanceof Stream) {
+        throw new Error('expected a Streams array ' + stream);
+      }
+      result.push({
+        name : stream.name,
+        id : stream.id,
+        parentId : stream.parentId,
+        singleActivity : stream.singleActivity,
+        clientData : stream.clientData,
+        trashed : stream.trashed,
+        created : stream.created,
+        createdBy : stream.createdBy,
+        modified : stream.modified,
+        modifiedBy : stream.modifiedBy,
+        children : ConnectionStreams.Utils.toJSON(stream.children)
+      });
+    });
+    return result;
+  },
 
   /**
    * Walk thru a streamArray of objects
@@ -7818,7 +9196,7 @@ module.exports = ConnectionStreams;
  */
 
 
-},{"../Stream.js":9,"../utility/utility.js":28,"underscore":3}],19:[function(_dereq_,module,exports){
+},{"../Stream.js":13,"../utility/utility.js":34,"underscore":7}],25:[function(_dereq_,module,exports){
 
 var utility = _dereq_('./utility/utility');
 var eventTypes = module.exports = { };
@@ -7867,12 +9245,27 @@ eventTypes.hierarchical = function () {
   return this._hierarchical;
 };
 
+
+
 /**
  * @link http://api.pryv.com/event-typez.html#about-json-file
  * @param {eventTypes~contentCallback} callback
  */
+
 eventTypes.loadFlat = function (callback) {
-  _getFile('flat.json', callback);
+  var myCallback = function (error, result) {
+    this._flat = result;
+    callback(error, result);
+  };
+  _getFile('flat.json', myCallback.bind(this));
+};
+
+
+eventTypes.flat = function (eventType) {
+  if (!this._flat) {
+    throw new Error('Call eventTypes.loadFlat, before accessing flat');
+  }
+  return this._flat.types[eventType];
 };
 
 /**
@@ -7906,7 +9299,7 @@ eventTypes.extras = function (eventType) {
  * @param {Object} result - jSonEncoded result
  */
 
-},{"./utility/utility":28}],"pryv":[function(_dereq_,module,exports){
+},{"./utility/utility":34}],"pryv":[function(_dereq_,module,exports){
 module.exports=_dereq_('yfS/Pm');
 },{}],"yfS/Pm":[function(_dereq_,module,exports){
 module.exports = {
@@ -7918,10 +9311,13 @@ module.exports = {
   Filter: _dereq_('./Filter.js'),
 
   eventTypes: _dereq_('./eventTypes.js'),
-  utility: _dereq_('./utility/utility.js')
+  utility: _dereq_('./utility/utility.js'),
+  MESSAGES: {
+    MONITOR: _dereq_('./Monitor.js').Messages
+  }
 };
 
-},{"./Connection.js":4,"./Event.js":6,"./Filter.js":7,"./Stream.js":9,"./auth/Auth.js":12,"./eventTypes.js":19,"./utility/utility.js":28}],22:[function(_dereq_,module,exports){
+},{"./Connection.js":8,"./Event.js":10,"./Filter.js":11,"./Monitor.js":12,"./Stream.js":13,"./auth/Auth.js":16,"./eventTypes.js":25,"./utility/utility.js":34}],28:[function(_dereq_,module,exports){
 /**
  * (event)Emitter renamed to avoid confusion with prvy's events
  */
@@ -8006,9 +9402,12 @@ SignalEmitter.prototype._fireEvent = function (signal, content, batch) {
 
 SignalEmitter.batchSerial = 0;
 /**
- * start a batch process
- * @param eventual superBatch you can hook on. In this case it will call superBatch.waitForMe(..)
- * @return an object where you have to call stop when done
+ * Start a batch process
+ *
+ * @param batchName Name of the new batch
+ * @param orHookOnBatch Existing batch to hook on ("superbatch")
+ * @return A batch object (call `stop()` when done)
+ * @private
  */
 SignalEmitter.prototype.startBatch = function (batchName, orHookOnBatch) {
   if (orHookOnBatch && orHookOnBatch.sender === this) { // test if this batch comes form me
@@ -8051,7 +9450,7 @@ SignalEmitter.prototype.startBatch = function (batchName, orHookOnBatch) {
   return batch;
 };
 
-},{"underscore":3}],23:[function(_dereq_,module,exports){
+},{"underscore":7}],29:[function(_dereq_,module,exports){
 /* jshint ignore:start */
 
 /*\
@@ -8110,7 +9509,7 @@ module.exports = {
   }
 };
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],30:[function(_dereq_,module,exports){
 /* jshint ignore:start */
 
 /*!
@@ -8168,7 +9567,7 @@ module.exports = function (ready) {
       })
 }();
 
-},{}],25:[function(_dereq_,module,exports){
+},{}],31:[function(_dereq_,module,exports){
 /**
  * Common regexps
  * TODO: fix naming to "commonRegexps", "Username" and "Email" (they are constants)
@@ -8178,7 +9577,7 @@ module.exports = {
   email : /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/
 };
 
-},{}],26:[function(_dereq_,module,exports){
+},{}],32:[function(_dereq_,module,exports){
 /**
  *
  * @param {Object} pack json with
@@ -8189,8 +9588,8 @@ module.exports = {
  * @param {Object} [pack.headers] : key / value map of headers
  * @param {Object} [pack.params] : the payload -- only with POST/PUT
  * @param {String} [pack.parseResult = 'json'] : 'text' for no parsing
- * @param {Function} pack.success : function (result, requestInfos)
- * @param {Function} pack.error : function (error, requestInfos)
+ * @param {Function} pack.success : function (result, resultInfo)
+ * @param {Function} pack.error : function (error, resultInfo)
  * @param {String} [pack.info] : a text
  * @param {Boolean} [pack.async = true]
  * @param {Number} [pack.expectedStatus] : http result code
@@ -8270,7 +9669,9 @@ module.exports = function (pack)  {
       var result = null;
 
       if (parseResult === 'json') {
-        try { result = JSON.parse(xhr.responseText); } catch (e) {
+        var response = xhr.responseText;
+        response = response.trim() === '' ? '{}' : response;
+        try { result = JSON.parse(response); } catch (e) {
           return pack.error({
             message: 'Data is not JSON',
             detail: xhr.responseText + '\n' + detail,
@@ -8279,13 +9680,13 @@ module.exports = function (pack)  {
           });
         }
       }
-      var requestInfo = {
+      var resultInfo = {
         xhr : xhr,
         code : xhr.status,
-        headers : xhr.getAllResponseHeaders()
+        headers : parseResponseHeaders(xhr.getAllResponseHeaders())
       };
 
-      pack.success(result, requestInfo);
+      pack.success(result, resultInfo);
     }
   };
   if (pack.progressCallback && typeof(pack.progressCallback) === 'function') {
@@ -8339,7 +9740,34 @@ var _initXHR = function () {
   return XHR;
 };
 
-},{}],27:[function(_dereq_,module,exports){
+
+/**
+ * XmlHttpRequest's getAllResponseHeaders() method returns a string of response
+ * headers according to the format described here:
+ * http://www.w3.org/TR/XMLHttpRequest/#the-getallresponseheaders-method
+ * This method parses that string into a user-friendly key/value pair object.
+ */
+function parseResponseHeaders(headerStr) {
+  var headers = {};
+  if (!headerStr) {
+    return headers;
+  }
+  var headerPairs = headerStr.split('\u000d\u000a');
+  for (var i = 0; i < headerPairs.length; i++) {
+    var headerPair = headerPairs[i];
+    // Can't use split() here because it does the wrong thing
+    // if the header value has the string ": " in it.
+    var index = headerPair.indexOf('\u003a\u0020');
+    if (index > 0) {
+      var key = headerPair.substring(0, index).toLowerCase();
+      var val = headerPair.substring(index + 2);
+      headers[key] = val;
+    }
+  }
+  return headers;
+}
+
+},{}],33:[function(_dereq_,module,exports){
 /* global document, navigator */
 /* jshint -W101*/
 
@@ -8378,14 +9806,14 @@ utility.getUsernameFromUrl = function (url) {
     recIndex = hostname.indexOf('rec'),
     pryvIndex = hostname.indexOf('pryv');
   if (recIndex <= 0 && pryvIndex <= 0) {
-    console.log('getUsernameFromUrl:', 'unknown hostname:', hostname);
+    console.warn('getUsernameFromUrl:', 'unknown hostname:', hostname);
     return null;
   }
   var usernameIndex = pryvIndex > 0 ? pryvIndex - 1: recIndex - 1;
   if (hostname[usernameIndex].match(utility.regex.username)) {
     return hostname[usernameIndex];
   } else {
-    console.log('getUsernameFromUrl:', 'invalid username:', hostname[usernameIndex]);
+    console.warn('getUsernameFromUrl:', 'invalid username:', hostname[usernameIndex]);
     return null;
   }
 };
@@ -8410,7 +9838,23 @@ utility.getSharingsFromUrl = function (url) {
     return [];
   }
 };
+utility.isSignInFromUrl = function (url) {
+  var username = utility.getUsernameFromUrl(url);
+  if (!username) {
+    return false;
+  }
+  var location;
+  if (url) {
+    location = document.createElement('a');
+    location.href = url;
+  } else {
+    location = document.location;
+  }
+  var path = location.hash.toLowerCase().split('/'),
+    signinIndex = path.indexOf('signin');
+  return signinIndex !== -1;
 
+};
 utility.getParamsFromUrl = function (url) {
   var location;
   if (url) {
@@ -8557,7 +10001,7 @@ utility.domReady = _dereq_('./domReady');
 
 utility.request = _dereq_('./request-browser');
 
-},{"./docCookies":23,"./domReady":24,"./request-browser":26}],28:[function(_dereq_,module,exports){
+},{"./docCookies":29,"./domReady":30,"./request-browser":32}],34:[function(_dereq_,module,exports){
 var socketIO = _dereq_('socket.io-client'),
     _ = _dereq_('underscore');
 
@@ -8638,6 +10082,6 @@ utility.ioConnect = function (settings) {
 };
 
 
-},{"./SignalEmitter.js":22,"./regex":25,"./utility-browser.js":27,"./utility-node.js":1,"socket.io-client":2,"underscore":3}]},{},["yfS/Pm"])
+},{"./SignalEmitter.js":28,"./regex":31,"./utility-browser.js":33,"./utility-node.js":1,"socket.io-client":6,"underscore":7}]},{},["yfS/Pm"])
 ("yfS/Pm")
 });

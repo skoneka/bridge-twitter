@@ -61,7 +61,13 @@
       };
 
 
-    pryv.Auth.config.registerURL = pryv.Auth.config.registerStagingURL;
+
+    <%
+    // HACK, TODO: cleanup when lib updated with more sensible config
+    if (domain.indexOf('pryv.in') !== -1) {
+    %>
+      pryv.Auth.config.registerURL = pryv.Auth.config.registerStagingURL;
+    <% } %>
     pryv.Auth.setup(settings);
     </script>
 
