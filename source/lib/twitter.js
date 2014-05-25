@@ -1,16 +1,19 @@
-var twitter = require('ntwitter'),
-    usersStorage = require('../storage/users-storage'),
+// TODO: see for moving appropriate bits directly into routes
+
+var Twitter = require('ntwitter'),
+    storage = require('../storage/users'),
     config = require('../utils/config'),
     pryv = require('./pryv'),
     winston = require('winston'),
     timestamp = require('unix-timestamp');
 
-var openedStreams = {};
-module.exports.openedStreams = openedStreams;
+var openedStreams = exports.openedStreams = {};
 
 exports.streamTweetsFromExistingUsers = function (users) {
   for (var i = 0, len = users.length; i < len; i++) {
-    if (users[i].pryv.credentials.isValid) {streamUserTweets(users[i]); }
+    if (users[i].pryv.credentials.isValid) {
+      streamUserTweets(users[i]);
+    }
   }
 };
 
@@ -27,7 +30,7 @@ function streamUserTweets(user) {
       openedStreams[currentTwitterUsername].streamRef.destroy();
     }
 
-    openedStreams[currentTwitterUsername] = new twitter({
+    openedStreams[currentTwitterUsername] = new Twitter({
       consumer_key: config.get('twitter:consumerKey'),
       consumer_secret: config.get('twitter:consumerSecret'),
       access_token_key: user.twitter.credentials[i].accessToken,
@@ -61,17 +64,19 @@ function streamUserTweets(user) {
     winston.error(error + ': ' + code);
   }
 }
-module.exports.streamUserTweets = streamUserTweets;
+exports.streamUserTweets = streamUserTweets;
 
 exports.transferUserTimeline = function (username, account, done) {
-
   getUserTimeline(username, account, formatUserTimeline, done);
 };
 
 function getUserTimeline(username, account, next, done) {
   var data = [];
   getUserData(username.toLowerCase(), function (user) {
-    if (!user) { return done('user not found', data); }
+    if (! user) {
+      return done('user not found', data);
+    }
+
     var credentials = {};
     for (var i = 0; i < user.twitter.credentials.length; i++) {
       var currentCredentials = user.twitter.credentials[i];
@@ -81,7 +86,7 @@ function getUserTimeline(username, account, next, done) {
         break;
       }
     }
-    var twit = new twitter({
+    var twitter = new Twitter({
       consumer_key: config.get('twitter:consumerKey'),
       consumer_secret: config.get('twitter:consumerSecret'),
       access_token_key: credentials.accessToken,
@@ -99,7 +104,7 @@ function getUserTimeline(username, account, next, done) {
       // Do not include this property on the first iteration
       if (lastId) { args.max_id = lastId; }
 
-      twit.getUserTimeline(args, onTimeline);
+      twitter.getUserTimeline(args, onTimeline);
 
       function onTimeline(err, chunk) {
         if (err) {
@@ -136,10 +141,9 @@ function getUserTimeline(username, account, next, done) {
     }
   });
 }
-module.exports.getUserTimeline = getUserTimeline;
+exports.getUserTimeline = getUserTimeline;
 
 function formatUserTimeline(user, data, next, done) {
-
   var tweetsHistory = [];
 
   for (var i = 0, len = data.length; i < len; i++) {
@@ -159,7 +163,7 @@ function formatUserTimeline(user, data, next, done) {
   tweetsHistory = JSON.stringify(tweetsHistory);
   next(user.pryv, tweetsHistory, done);
 }
-module.exports.formatUserTimeline = formatUserTimeline;
+exports.formatUserTimeline = formatUserTimeline;
 
 function filterTweetsFromHistory(collection, query) {
   var newCollection = [];
@@ -187,8 +191,8 @@ function selectFavsFromHistory(collection, query) {
 }
 
 function getUserData(username, done) {
-  usersStorage.readUser({'pryv.credentials.username': username}, function (result) {
+  storage.getUser({'pryv.credentials.username': username}, function (result) {
     done(result);
   });
 }
-module.exports.getUserData = getUserData;
+exports.getUserData = getUserData;

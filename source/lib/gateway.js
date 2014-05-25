@@ -1,7 +1,8 @@
+// TODO: move directly into routes
 
-var usersStorage = require('../storage/users-storage'),
+var storage = require('../storage/users'),
+    schema = require('../storage/schema'),
     twitter = require('./twitter');
-
 
 exports.authProcessDetails = function (req, res) {
   var response = {
@@ -11,37 +12,48 @@ exports.authProcessDetails = function (req, res) {
   res.send(response);
 };
 
+exports.readSchema = function (req, res) {
+  res.set('Content-Type', 'application/json');
+  res.send(schema.json(schema.Action.Read));
+};
+
+/**
+ * For testing purposes, TODO: remove
+ */
+exports.getUsers = function (req, res) {
+  storage.getUsers(function (result) {
+    res.send(result);
+  });
+};
+
+exports.getUser = function (req, res) {
+  var username = req.params.username;
+  storage.getUser({'pryv.credentials.username': username}, function (user) {
+    if (!user) {
+      res.statusCode = 404;
+      return res.send({error: 'no such user'});
+    }
+    res.send(user);
+  });
+};
 
 exports.createUser = function (req, res) {
   //var username = req.params.username;
-  var user = req.body.user;
-  usersStorage.createUser(user, function (err, result) {
+  var userData = req.body.user;
+  storage.createUser(userData, function (err, user) {
     if (err) {
       res.statusCode = err;
     } else {
       res.statusCode = 201;
-      twitter.streamUserTweets(user);
+      twitter.streamUserTweets(userData);
     }
-    res.send(result);
+    res.send(user);
   });
 };
-
-
-exports.readUser = function (req, res) {
-  var username = req.params.username;
-  usersStorage.readUser({'pryv.credentials.username': username}, function (result) {
-    if (!result) {
-      res.statusCode = 404;
-      return res.send({error: 'no such user'});
-    }
-    res.send(result);
-  });
-};
-
 
 exports.updateUser = function (req, res) {
   var username = req.params.username;
-  usersStorage.updateUser({'pryv.credentials.username': username},
+  storage.updateUser({'pryv.credentials.username': username},
     req.body, function (err, result) {
     if (err) {
       res.statusCode = err;
@@ -52,13 +64,11 @@ exports.updateUser = function (req, res) {
   });
 };
 
-
 exports.deleteUser = function (req, res) {
-  usersStorage.deleteUser(req.body, function (result) {
+  storage.deleteUser(req.body, function (result) {
     res.send(result);
   });
 };
-
 
 exports.transferUserTimeline = function (req, res) {
   var username = req.params.username;
@@ -68,17 +78,3 @@ exports.transferUserTimeline = function (req, res) {
   });
 };
 
-
-exports.readSchema = function (req, res) {
-  usersStorage.readSchema(function (result) {
-    res.set('Content-Type', 'application/json');
-    res.send(result);
-  });
-};
-
-
-exports.listUsers = function (req, res) {
-  usersStorage.listUsers(function (result) {
-    res.send(result);
-  });
-};

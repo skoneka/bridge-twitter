@@ -2,7 +2,7 @@
 
 var should = require('should'),
     request = require('supertest'),
-    usersStorage = require('../source/storage/users-storage'),
+    storage = require('../source/storage/users'),
     app = require('../source/app'),
     JSV = require('JSV').JSV;
 
@@ -28,12 +28,12 @@ var userSettingsData = {
   }
 };
 
-
+// TODO: restructure tests according to routes
 describe('gateway', function () {
 
   var id;
   before(function (done) {
-    usersStorage.createUser(userSettingsData.user, function (err, result) {
+    storage.createUser(userSettingsData.user, function (err, result) {
       result.should.have.property('ok');
       id = result.ok;
       done();
@@ -83,7 +83,7 @@ describe('gateway', function () {
       if (err) { return done(err); }
       res.body.should.have.property('ok');
       id = res.body.ok;
-      usersStorage.readUser({'_id': id}, function (result) {
+      storage.getUser({'_id': id}, function (result) {
         if (result) { done(); }
       });
     });
@@ -163,7 +163,7 @@ describe('gateway', function () {
   });
 
   it('should find updated info in db', function (done) {
-    usersStorage.readUser({'pryv.streamId': 'new streamId'}, function (result) {
+    storage.getUser({'pryv.streamId': 'new streamId'}, function (result) {
       if (result) {
         result.twitter.filterOption.should.equal('new');
         done();
@@ -186,7 +186,9 @@ describe('gateway', function () {
   });
 
   after(function (done) {
-    usersStorage.deleteUser({'pryv.credentials.auth': 'auth_string'}, function (result) {
+    // TODO: fix this (currently fails with "Error: key pryv.credentials.auth must not contain '.'"
+    storage.deleteUser({'pryv.credentials.auth': 'auth_string'}, function (result) {
+      console.log(require('util').inspect(result));
       result.should.have.property('ok');
       done();
     });

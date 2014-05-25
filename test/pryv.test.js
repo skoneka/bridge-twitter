@@ -30,18 +30,18 @@ var data = {
     'screen_name': 'testuser'
   }
 };
-var formatedData = 
+var formattedData =
 [ { time: 1399070017,
     streamId: 'social-twitter',
     type: 'message/twitter',
-    content: 
+    content:
      { id: '462359282923880448',
        'screen-name': 'xa4loz',
        text: 'ds sdffsd' } },
   { time: 1399069817,
     streamId: 'social-twitter',
     type: 'message/twitter',
-    content: 
+    content:
      { id: '462358441110294528',
        'screen-name': 'xa4loz',
        text: 'isudfeiuf :)' } }
@@ -112,7 +112,7 @@ describe('Pryv Library', function () {
       'api-version': '0.7.19' });
 
     it('should send a batch of events to the activity server', function (done) {
-      pryv.sendFilteredData(user.pryv, formatedData, function (err, response) {
+      pryv.sendFilteredData(user.pryv, formattedData, function (err, response) {
         response.should.have.property('eventsForwarded');
         done();
       });
@@ -147,7 +147,7 @@ describe('Pryv Library', function () {
       etag: '"-936805979"' });
 
     it('should avoid forwarding duplicate tweets', function (done) {
-      pryv.removeDuplicateEvents(user.pryv, JSON.stringify(formatedData),
+      pryv.removeDuplicateEvents(user.pryv, JSON.stringify(formattedData),
         function (user, dataArray) {
         dataArray.should.have.lengthOf(0);
         done();

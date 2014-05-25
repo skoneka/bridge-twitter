@@ -20,7 +20,9 @@ server.listen(config.get('http:port'), config.get('http:ip'), function () {
   var address = server.address();
   var protocol = server.key ? 'https' : 'http';
   server.url = protocol + '://' + address.address + ':' + address.port;
-  winston.info('Twitter server ' + server.url + ' in ' + app.settings.env + ' mode');
+  winston.info('Twitter bridge server ' + server.url + ' in ' + app.settings.env + ' mode');
 });
 
 module.exports = server;
+
+// TODO: review logging (incl. messages)

@@ -17,9 +17,9 @@ module.exports = nconf;
 //2. Environment variables
 
 nconf.argv()
-  .env();
+    .env();
 
-//3. A file located at ..   (so we can call ./ndode server --config confile.json   )
+//3. A file located at ..   (so we can call ./node server --config config.json)
 var configFile =  null; //TODO: set proper config file path
 if (typeof(nconf.get('config')) !== 'undefined') {
   configFile = nconf.get('config');
@@ -32,11 +32,11 @@ if (configFile) {
   } else {
     logger.warn('Cannot find custom config file: ' + configFile);
   }
-  nconf.file({ file: configFile});
+  nconf.file({file: configFile});
 }
 
 nconf.defaults({
-  //TODO: group Pryv API settings in "pryv" property
+  // TODO: group Pryv API settings in "pryv" property
   pryvdomain : 'pryv.in', // will be set to pryv.io in production
   pryvStaging: true,
   database: {
@@ -51,6 +51,7 @@ nconf.defaults({
   },
   logs: {
     console: {
+      // TODO: enable timestamp
       active: false, // console log is active by default in Winston
       level: 'debug',
       colorize: true

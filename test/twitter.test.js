@@ -2,7 +2,7 @@
 
 var should = require('should'),
     nock = require('nock'),
-    usersStorage = require('../source/storage/users-storage'),
+    storage = require('../source/storage/users'),
     twitter = require('../source/lib/twitter');
 
 describe('Twitter api', function () {
@@ -32,7 +32,7 @@ describe('Twitter api', function () {
         }
       }
     };
-    usersStorage.createUser(user, function (err, result) {
+    storage.createUser(user, function (err, result) {
       result.should.have.property('ok');
       id = result.ok;
       done();
@@ -40,7 +40,7 @@ describe('Twitter api', function () {
   });
 
   after(function (done) {
-    usersStorage.deleteUser({_id: id}, function (result) {
+    storage.deleteUser({_id: id}, function (result) {
       result.should.have.property('ok');
       done();
     });
