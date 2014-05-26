@@ -1,15 +1,76 @@
 <% include header %>
 
-      <script>
-      function forwardTweetsHistory(account) {
+    <div id="wrapper" class="container">
+      <div id="main">
 
+        <span id="pryvButton"></span>
+        <h1>
+          <img class="img-responsive" src="https://d3gblc8a9weyfb.cloudfront.net/apps/bridge-twitter/icon512.png" alt="Twitter logo">
+          Twitter settings
+        </h1>
+        <p>Tweets will be sent to the stream <strong>Twitter</strong> in <strong><%= result.pryv.credentials.username %></strong>'s Pryv.</p>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Live forwarding</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="filterOption">What tweets should we forward to Pryv?</label>
+              <select id="filterOption" class="form-control">
+                <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All new tweets</option>
+                <option value="filter" <% if (result.twitter.filterOption === 'filter') { %>selected<% } %>>All new tweets containing the filter text</option>
+                <option value="favorite" <% if (result.twitter.filterOption === 'favorite') { %>selected<% } %>>Only my favorite tweets</option>
+              </select>
+            </div>
+
+            <div id="filterWrapper" class="form-group">
+              <label for="filter">Filter text</label>
+              <input id="filter" type="text" class="form-control" placeholder="Enter filter content" value="<%= result.twitter.filter %>">
+              <p class="help-block">If the filter is active, only tweets containing this text will be sent to Pryv</p>
+            </div>
+
+            <div class="footer-actions">
+              <span id="formResult"></span>&nbsp;
+              <button type="button" class="btn btn-primary" onclick="submitForm();">Save settings</button>
+            </div>
+          </div>
+        </div>
+
+        <% result.twitter.credentials.forEach(function(credential){
+          if (credential.accessToken !== '') {%>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">@<%= credential.username %></h3>
+          </div>
+          <div class="panel-body">
+            <p>
+              New tweets in <strong>@<%= credential.username %></strong> will be automatically sent to your Pryv according to the "live forwarding" settings above.
+            </p>
+            <div class="footer-actions">
+              <span id="<%= credential.username %>"></span>&nbsp;
+              <button class="btn btn-default" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import existing tweets</button>&nbsp;<span class="help-block" style="display: inline-block">(max. 3200)</span>
+            </div>
+          </div>
+        </div>
+        <% }}); %>
+
+        <p><a href="/auth">Add a Twitter account</a></p>
+        <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the Twitter settings</a> of your corresponding account.</p><br />
+
+      </div>
+    </div>
+
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script>
+      function forwardTweetsHistory(account) {
         $.ajax({
-            type: 'GET',
-            url: '/user-timeline/<%=data.username %>/'+account
+          type: 'GET',
+          url: '/user-timeline/<%=data.username %>/'+account
         }).done(function(data){
-            console.log("done importing");
-            $("#"+account).html(data.eventsForwarded+' tweets successfuly imported');
-            console.dir(data);
+          console.log("done importing");
+          $("#"+account).html(data.eventsForwarded+' tweets successfuly imported');
+          console.dir(data);
         });
         return false;
       }
@@ -19,53 +80,12 @@
             'filter':$("#filter").val(),
             'filterOption':$('#filterOption').val()}}, dataType:'json', success: function(response) {
           console.log($('#filterOption').val());
-          $('#formResult').html('update successful');
+          $('#formResult').html('Settings saved!');
           console.log(response);
         }});
         return false;
       }
-      </script>
+    </script>
 
-    <div class="container">
-
-      <span id="pryvButton"></span>
-      <h2>Twitter integration settings</h2>
-      <br />
-
-      <form class="well" action="" method="" onsubmit="return submitForm();" id="prefsForm">
-        <label class="select">
-          Add the following tweets to my Pryv:<br />
-          <select id="filterOption">
-            <option value="all" <% if (result.twitter.filterOption === 'all') { %>selected<% } %>>All tweets</option>
-            <option value="filter" <% if (result.twitter.filterOption === 'filter') { %>selected<% } %>>Only those containing my filter text</option>
-            <option value="favorite" <% if (result.twitter.filterOption === 'favorite') { %>selected<% } %>>Only my favorite tweets</option>
-          </select>
-        </label>
-
-        <label>Filter text</label>
-        <input id="filter" type="text" class="span3" placeholder="Set your filter" value="<%= result.twitter.filter %>">
-        <span class="help-inline">If the filter is active, only tweets containing this text will be added to Pryv</span>
-
-        <div id="formResult"></div>
-
-        <button type="submit" class="btn">Submit</button>
-      </form>
-
-      <% result.twitter.credentials.forEach(function(credential){
-        if (credential.accessToken !== '') {%>
-      <form class="well">
-        Pryv is connected to the Twitter account <b><%= credential.username %></b>. New tweets will automatically be added to your Pryv based on your preferences.
-        <br /><br /><button class="btn" type="button" onclick="forwardTweetsHistory('<%= credential.username %>')">Import tweets</button><span class="help-inline">&nbsp;max. 3200 tweets</span>
-        <div id="<%= credential.username %>"></div>
-      </form>
-      <% }}) %>
-
-      <p><a href="/auth">Add a new Twitter account</a></p>
-      <p>To revoke the access, go to <a href="https://twitter.com/settings/applications" target="_blank">the Twitter settings</a> of your corresponding account.</p><br />
-
-    </div>
-
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
   </body>
 </html>

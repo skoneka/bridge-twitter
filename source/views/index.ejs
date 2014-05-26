@@ -1,20 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Pryv: Twitter integration</title>
+    <title>Pryv: Twitter settings</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-    <style>
-      body {
-        padding-top: 10px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
-      #pryvButton{
-        position:absolute;
-        right:0px;
-        width:130px;
-      }
-    </style>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300,500,700,400italic|Roboto+Condensed:400,300,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="stylesheets/style.css">
     <script type="text/javascript" src="js/pryv.js"></script>
   </head>
   <body>
@@ -70,10 +62,12 @@
     pryv.Auth.setup(settings);
     </script>
 
-    <div class="container">
-      <span id="pryvButton"></span>
-      <h2>Twitter integration settings</h2>
-      <p>Please sign in to connect or configure your Twitter account.</p>
+    <div id="wrapper" class="container">
+      <div id="main">
+        <span id="pryvButton"></span>
+        <h1>Twitter settings</h1>
+        <p>Please sign into Pryv to connect or configure your Twitter account.</p>
+      </div>
     </div>
 
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
