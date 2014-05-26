@@ -1,7 +1,7 @@
 {
   "name": "pryv-integration-twitter",
   "description": "Gateway server between the Twitter and Pryv APIs",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Xavier Righetti <xavier@thefabric.com>",
   "private": true,
   "dependencies": {
