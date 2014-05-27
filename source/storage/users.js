@@ -8,11 +8,11 @@ var mongoose = require('mongoose'),
     // TODO: replace obsolete JSV with z-schema
     JSV = require('JSV').JSV,
     schema = require('./schema'),
-    winston = require('winston');
+    logger = require('winston');
 
 mongoose.connect('mongodb://' + config.get('database:host') +
 	'/' + config.get('database:name'), function (err) {
-  if (err) { winston.error(err); }
+  if (err) { logger.error(err); }
 });
 
 
@@ -71,7 +71,7 @@ exports.updateUser = function (query, update, done) {
       }
     }
     user.save(function (err, data) {
-      if (err) { return winston.error(err); }
+      if (err) { return logger.error(err); }
       done(undefined, {'ok': 'updated', 'data': data});
     });
   });
@@ -87,7 +87,7 @@ exports.updateUserTwitterAccount = function (query, update, done) {
     }
     user.twitter.credentials.push(update);
     user.save(function (err, data) {
-      if (err) { return winston.error(err); }
+      if (err) { return logger.error(err); }
       done(undefined, {'ok': 'updated', 'data': data});
     });
   });
@@ -102,15 +102,15 @@ exports.deleteUserTwitterAccount = function (query, username, done) {
       }
     }
     user.save(function (err) {
-      if (err) { return winston.error(err); }
+      if (err) { return logger.error(err); }
     });
   });
 };
 
-exports.deleteUser = function (conditions, done) {
-  User.remove(conditions, function (err, numAffected) {
+exports.deleteUser = function (query, done) {
+  User.remove(query, function (err, numAffected) {
     if (err) { return done({'error': err}); }
-    if (!numAffected) { return done({'error': 'nothing changed'}); }
+    if (! numAffected) { return done({'error': 'nothing changed'}); }
     done({'ok': 'deleted', 'numAffected': numAffected});
   });
 };

@@ -186,9 +186,7 @@ describe('gateway', function () {
   });
 
   after(function (done) {
-    // TODO: fix this (currently fails with "Error: key pryv.credentials.auth must not contain '.'"
     storage.deleteUser({'pryv.credentials.auth': 'auth_string'}, function (result) {
-      console.log(require('util').inspect(result));
       result.should.have.property('ok');
       done();
     });

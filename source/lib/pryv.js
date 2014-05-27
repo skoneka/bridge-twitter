@@ -1,6 +1,6 @@
 // TODO: see for moving appropriate bits directly into routes
 
-var winston = require('winston'),
+var logger = require('winston'),
     config = require('../utils/config'),
     pryv = require('pryv'),
     // TODO: replace "staging" with "domain"
@@ -63,9 +63,9 @@ function sendTweetEvent(user, eventData, done) {
       }}};
       storage.updateUser(condition, update, function (err) {
         if (err) {
-          winston.warn(err);
+          logger.warn(err);
         } else {
-          winston.info('auth not valid, user info updated!');
+          logger.info('auth not valid, user info updated!');
         }
       });
     }
@@ -88,8 +88,8 @@ function sendFilteredData(user, eventsData, done) {
   // TODO: update this call to new args format
   var connection = new pryv.Connection(settings);
   connection.events.batchWithData(eventsData, function (err, events) {
-    if (err) { winston.error(err); }
-    winston.info(events.length + ' event(s) successfully created on pryv');
+    if (err) { logger.error(err); }
+    logger.info(events.length + ' event(s) successfully created on pryv');
     done(err, {eventsForwarded: events.length} || {eventsForwarded: 0});
   });
 }
@@ -110,10 +110,10 @@ function removeDuplicateEvents(user, data, next, done) {
   };
   connection.events.get(params, function (err, events) {
     if (err) {
-      winston.error('failed to fetch data: ' + err);
+      logger.error('failed to fetch data: ' + err);
       return done(null);
     }
-    winston.info('comparing ' + events.length +
+    logger.info('comparing ' + events.length +
       ' events with ' + dataArray.length +
       ' events to be sent');
 

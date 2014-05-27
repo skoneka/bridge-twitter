@@ -3,7 +3,7 @@
 var storage = require('../storage/users'),
     twitter = require('./twitter'),
 		OAuth = require('oauth').OAuth,
-    winston = require('winston'),
+    logger = require('winston'),
     config = require('../utils/config');
 
 var oAuth = new OAuth(
@@ -31,7 +31,7 @@ exports.readPrefs = function (req, res) {
   storage.getUser({'pryv.credentials.username': req.session.username}, function (user) {
     if (! user) {
       // user hasn't been created in the db yet
-      winston.info('user not found, creating user in db...');
+      logger.info('user not found, creating user in db...');
       var userData = {
         'twitter': {
           // TODO: check to remove this useless set of empty credentials
@@ -64,7 +64,7 @@ exports.readPrefs = function (req, res) {
         function (err) {
           // TODO: proper error handling
           if (! err) {
-            winston.info('info updated in db for user ' + req.session.username);
+            logger.info('info updated in db for user ' + req.session.username);
           }
 
           var instanceNum = 0;
@@ -77,7 +77,7 @@ exports.readPrefs = function (req, res) {
                   var condition = {'pryv.credentials.username': req.session.username};
                   storage.deleteUserTwitterAccount(condition,
                     credential.username, function (err) {
-                    if (err) { winston.error(err); }
+                    if (err) { logger.error(err); }
                   });
                 }
               });
@@ -97,7 +97,7 @@ exports.authorize = function (req, res) {
   oAuth.getOAuthRequestToken(function (err, oaToken, oaTokenSecret) {
     if (err) {
       // TODO: proper error handling
-      winston.error(err);
+      logger.error(err);
       res.send('there was an error :/');
     }
     else {
@@ -117,7 +117,7 @@ exports.callback = function (req, res) {
     oAuth.getOAuthAccessToken(oauth.token, oauth.token_secret, oauth.verifier,
     function (error, oaToken, oaTokenSecret, results) {
       if (error) {
-        winston.error(error);
+        logger.error(error);
         res.redirect('/prefs');
       } else {
         var condition = {'pryv.credentials.username': req.session.username};

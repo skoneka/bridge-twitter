@@ -51,17 +51,9 @@ nconf.defaults({
   },
   logs: {
     console: {
-      // TODO: enable timestamp
       active: false, // console log is active by default in Winston
       level: 'debug',
       colorize: true
-    },
-    file: {
-      active: false,
-      level: 'error',
-      path: 'twitter-gateway.log',
-      maxFileBytes: 4096,
-      maxNbFiles: 20
     }
   },
   twitter: {

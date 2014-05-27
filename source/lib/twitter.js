@@ -4,7 +4,7 @@ var Twitter = require('ntwitter'),
     storage = require('../storage/users'),
     config = require('../utils/config'),
     pryv = require('./pryv'),
-    winston = require('winston'),
+    logger = require('winston'),
     timestamp = require('unix-timestamp');
 
 var openedStreams = exports.openedStreams = {};
@@ -51,17 +51,17 @@ function streamUserTweets(user) {
     if (data.event === 'favorite' || data.text) {
       pryv.forwardTweet(user, data, function (err, createdEvent) {
         if (err) {
-          return winston.error(err);
+          return logger.error(err);
         }
         if (createdEvent) {
-          winston.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
+          logger.info('Tweet successfully stored on Pryv with id ' + createdEvent.id);
         }
       });
     }
   }
 
   function onStreamError(error, code) {
-    winston.error(error + ': ' + code);
+    logger.error(error + ': ' + code);
   }
 }
 exports.streamUserTweets = streamUserTweets;
@@ -108,7 +108,7 @@ function getUserTimeline(username, account, next, done) {
 
       function onTimeline(err, chunk) {
         if (err) {
-          winston.error('Twitter search failed: ' + err);
+          logger.error('Twitter search failed: ' + err);
           return done(err);
         }
 
