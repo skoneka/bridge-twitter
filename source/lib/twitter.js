@@ -36,6 +36,9 @@ function streamUserTweets(user) {
       access_token_key: user.twitter.credentials[i].accessToken,
       access_token_secret: user.twitter.credentials[i].accessSecret
     });
+    // TODO: shouldn't this be {with: 'user'} instead?
+    // see: https://dev.twitter.com/docs/streaming-apis/parameters#with
+    // see also "site" streams... https://dev.twitter.com/docs/streaming-apis/streams/site
     var condition = {track: user.twitter.credentials[i].username};
     openedStreams[currentTwitterUsername].stream('user', condition,
         onStreamOpen.bind(null, currentTwitterUsername));
