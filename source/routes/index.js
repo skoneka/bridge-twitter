@@ -1,4 +1,5 @@
 var beta = require('../lib/beta'),
+    pryvHelper = require('../lib/pryv'),
     config = require('../utils/config');
 
 /*
@@ -6,7 +7,10 @@ var beta = require('../lib/beta'),
  */
 module.exports = function (app) {
   app.get('/', function (req, res) {
-    res.render('index', {'domain': config.get('pryvdomain')});
+    res.render('index', {
+      domain: config.get('pryvdomain'),
+      requestedPermissions: pryvHelper.requestedPermissions
+    });
   });
 
   app.get('/prefs', beta.readPrefs);

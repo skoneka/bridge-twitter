@@ -9,6 +9,16 @@ var logger = require('winston'),
     storage = require('../storage/users'),
     timestamp = require('unix-timestamp');
 
+exports.targetStreamId = 'social-twitter';
+exports.requestedPermissions = [
+  {
+    streamId: exports.targetStreamId,
+    defaultName: 'Twitter',
+    level: 'manage'
+  }
+];
+
+
 /**
  * @param user
  * @param tweet
@@ -106,7 +116,7 @@ function removeDuplicateEvents(user, data, next, done) {
   var params = {
     fromTime:   dataArray[dataArray.length - 1].time,
     toTime:     dataArray[0].time + 1,
-    streams:    ['social-twitter']
+    streams:    [exports.targetStreamId]
   };
   connection.events.get(params, function (err, events) {
     if (err) {

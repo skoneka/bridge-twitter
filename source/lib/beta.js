@@ -2,6 +2,7 @@
 
 var storage = require('../storage/users'),
     twitter = require('./twitter'),
+    pryvHelper = require('./pryv'),
 		OAuth = require('oauth').OAuth,
     logger = require('winston'),
     config = require('../utils/config');
@@ -44,7 +45,7 @@ exports.readPrefs = function (req, res) {
           'filterOption': 'all'
         },
         'pryv': {
-          'streamId': 'social-twitter',
+          'streamId': pryvHelper.targetStreamId,
           'credentials': {
             'auth': req.session.appToken,
             'username': req.session.username,
@@ -86,7 +87,8 @@ exports.readPrefs = function (req, res) {
           res.render('prefs', {
             data: req.session,
             result: user,
-            domain: config.get('pryvdomain')
+            domain: config.get('pryvdomain'),
+            requestedPermissions: pryvHelper.requestedPermissions
           });
         });
     }

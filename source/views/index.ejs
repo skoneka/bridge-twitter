@@ -29,13 +29,8 @@
       /**
        * process the form and request access
        */
-      var requestedPermissions = [
-        {
-          "streamId" : "social-twitter",
-          "defaultName" : "Twitter",
-          "level" : "manage"
-        }
-      ];
+
+      var requestedPermissions = <%- JSON.stringify(requestedPermissions) %>;
 
       // ----------------------- //
       var settings = {

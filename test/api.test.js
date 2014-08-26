@@ -200,4 +200,39 @@ describe('API', function () {
 
   });
 
+  describe('GET /requested-permissions', function () {
+
+    it('should provide the permissions needed to access user data', function (done) {
+      request(app)
+          .get('/requested-permissions')
+          .set('Accept', 'application/json')
+          .set('Origin', 'https://test.pryv.me')
+          .expect('Content-Type', /json/)
+          .expect(200)
+          .end(function (err, res) {
+        if (err) { return done(err); }
+        res.body.should.have.property('permissions');
+        res.body.permissions.should.eql([
+          {
+            streamId: 'social-twitter',
+            defaultName: 'Twitter',
+            level: 'manage'
+          }
+        ]);
+        done();
+      });
+    });
+
+    it('should forbid requests from missing or unauthorized origin', function (done) {
+      request(app)
+          .get('/requested-permissions')
+          .set('Accept', 'application/json')
+          .set('Origin', 'https://some.thing.unauthorized')
+          .expect('Content-Type', /json/)
+          .expect(401)
+          .end(done);
+    });
+
+  });
+
 });
