@@ -47,7 +47,9 @@
             console.log("** SUCCESS! username:" + username +
               " appToken:" + appToken +
               " lang:" + languageCode);
-            window.location = "/prefs?appToken="+appToken+"&username="+username;
+            var search = location.search ? location.search + '&appToken=' + appToken :
+            '?appToken=' + appToken + '&username=' + username;
+            window.location = "/prefs" + search;
           },
           refused: function(reason) {
             console.log("** REFUSED! " + reason);
