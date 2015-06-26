@@ -7,6 +7,8 @@ Node.JS server handling Twitter to Pryv integration. Manages the forwarding of s
 
 Read, then execute `./scripts/setup-dev-environment.bash`. It will check for Mongo DB in the parent folder and install it if necessary.
 
+## Setting up the development environment on a Ubuntu 
+`apt-get install -y nodejs git mongodb`
 
 ## Usage
 
